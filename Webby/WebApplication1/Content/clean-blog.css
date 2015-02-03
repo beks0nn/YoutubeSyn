@@ -393,3 +393,21 @@ img::-moz-selection {
 body {
   webkit-tap-highlight-color: #0085a1;
 }
+
+.input-lg{
+    height: 52px;
+   font-size: 20px;
+   line-height: 52px;
+}
+
+.scrollList {  
+    height: 400px !important;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.iframeplusone{
+    width:100%;
+    height:400px;
+    display:block;
+}

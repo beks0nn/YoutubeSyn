@@ -1,0 +1,6 @@
+﻿@model WebApplication1.Models.HomeViewModel
+@{var uri = "http://www.youtube.com/embed/" + Model.UrlCurrent;}
+<iframe class="iframeplusone"
+        src='@uri'
+        frameborder="0">
+</iframe>

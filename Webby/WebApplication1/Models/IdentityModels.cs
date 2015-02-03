@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNet.Identity.EntityFramework;
+using System.Data.Entity;
 
 namespace WebApplication1.Models
 {
@@ -9,9 +10,15 @@ namespace WebApplication1.Models
 
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-        public ApplicationDbContext()
-            : base("DefaultConnection")
+        public ApplicationDbContext() : base("DefaultConnection") { }
+
+
+        public DbSet<Uri> Urls { get; set; }
+        public DbSet<CurrUrl> CurrUrl { get; set; }
+
+        public static ApplicationDbContext Create()
         {
+            return new ApplicationDbContext();
         }
     }
 }

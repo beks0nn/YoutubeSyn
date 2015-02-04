@@ -1,6 +1,60 @@
 ﻿@model WebApplication1.Models.HomeViewModel
-@{var uri = "http://www.youtube.com/embed/" + Model.UrlCurrent;}
-<iframe class="iframeplusone"
-        src='@uri'
-        frameborder="0">
-</iframe>
+<div id="player"></div>
+<script type="text/javascript" id="NeverFindThisIdAgainEver">
+    $(document).ready(function () {
+        $("#nextUrl").unbind();
+        $('#nextUrl').on('click', NextUrlAjax);
+    });
+
+    GLobalPostData = {
+        rowV: "@Model.RowVersion",
+    };
+
+
+    /*Since this is a parialView DOminsert. Have to "fake" youtubeApiInit When nexting.*/
+    if (typeof youtube_api_init != 'undefined') {
+        onYouTubeIframeAPIReady();
+    }
+
+    var player;
+    function onYouTubeIframeAPIReady() {
+        console.log("YoutubeApi Ready")
+        player = new YT.Player('player', {
+            height: '400',
+            width: '640',
+            videoId: '@Model.UrlCurrent',
+            events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
+            }
+        });
+    }
+
+    function onPlayerReady(event) {
+        event.target.playVideo();
+    }
+
+    function onPlayerStateChange(event) {
+        if (event.data == YT.PlayerState.ENDED) {
+            NextUrlAjax();
+        }
+    }
+
+    function NextUrlAjax() {
+        var postData =
+        {
+            _rowVersion: "@Model.RowVersion"
+        };
+        return $.ajax({
+            type: "POST",
+            url: "@Url.Action("NextUrl", "Home")",
+            data: postData,
+            dataType: "html",
+            success:
+            function (result) {
+                $('#diviFramePart').html(result);
+            }
+        });
+    }
+
+</script>

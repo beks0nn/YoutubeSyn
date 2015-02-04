@@ -5,9 +5,8 @@ using System.Web;
 
 namespace WebApplication1.Models
 {
-    public class HomeViewModel
+    public class IFrameVM
     {
-        public List<Uri> UrlList { get; set; }
         public string UrlCurrent { get; set; }
         public string RowVersion { get; set; }
     }

@@ -11,7 +11,7 @@
             </div> 
             <div class="col-md-4">
                 <div id="divUrlList">
-                    @Html.Partial("UrlListPartial", Model)
+                    @Html.Partial("UrlListPartial")
                 </div>
             </div>
         </div>
@@ -46,8 +46,8 @@
 
 <script type="text/javascript">
     $('#submitUrl').on('click', AddUrlAjax);
-    $('#nextUrl').on('click', NextUrlAjax);
-    
+    var postData;
+
     function AddUrlAjax() {
         var postData =
         {
@@ -65,16 +65,57 @@
         });
     }
 
-    function NextUrlAjax() {
+    /**************************synkka mera****************************/
+    var ajaxRequest;
+    var GLobalPostData = {
+        rowV: "@Model.RowVersion",
+    };
+
+    function HandleAjaxResponse() {
+        setTimeout(function () {
+            $.when(Poll()).done(function (response) {
+                if (response.syn === true) {
+                    HandleAjaxResponse();
+
+                }
+                else if (response.syn === false) {
+                    console.log(GLobalPostData);
+                    Sync();
+                }
+            });
+        }, 500);
+    }
+
+    function Poll() {
+        return ajaxRequest = $.ajax({
+            type: "POST",
+            url: "@Url.Action("Syn", "Home")",
+            data: GLobalPostData,
+            dataType: "json"
+        });
+    }
+    function Sync() {
         return $.ajax({
             type: "POST",
-            url: "@Url.Action("NextUrl", "Home")",
+            url: "@Url.Action("Sync", "Home")",
             dataType: "html",
             success:
             function (result) {
                 $('#diviFramePart').html(result);
+                HandleAjaxResponse();
             }
         });
     }
+    /*************************************************/
+    HandleAjaxResponse();
+    /*************************************************/
 
+    /*Load JewTube APi*/
+    if (typeof youtube_api_init == 'undefined') {
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        var youtube_api_init = 1;
+    }
 </script>

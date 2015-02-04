@@ -167,11 +167,16 @@
     <Compile Include="Migrations\201502021436001_FUCK YOU.Designer.cs">
       <DependentUpon>201502021436001_FUCK YOU.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201502030829573_RowVersion.cs" />
+    <Compile Include="Migrations\201502030829573_RowVersion.Designer.cs">
+      <DependentUpon>201502030829573_RowVersion.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\CurUrl.cs" />
     <Compile Include="Models\HomeViewModel.cs" />
     <Compile Include="Models\IdentityModels.cs" />
+    <Compile Include="Models\IFrameVM.cs" />
     <Compile Include="Models\Uri.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
@@ -246,6 +251,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201502021436001_FUCK YOU.resx">
       <DependentUpon>201502021436001_FUCK YOU.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201502030829573_RowVersion.resx">
+      <DependentUpon>201502030829573_RowVersion.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

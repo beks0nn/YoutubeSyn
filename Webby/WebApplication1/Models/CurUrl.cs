@@ -12,6 +12,9 @@ namespace WebApplication1.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity), Required]
         public int Id { get; set; }
 
+        [Timestamp]
+        public byte[] RowVersion { get; set; }
+
         public int UrlIdentity { get; set; }
     }
 }

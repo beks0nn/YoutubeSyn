@@ -4,6 +4,11 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using WebApplication1.Models;
+using System.Data.Entity.Infrastructure;
+using System.Threading.Tasks;
+using System.Data.Entity;
+using System.Net.Http;
+using System.Net;
 
 namespace WebApplication1.Controllers
 {
@@ -16,66 +21,115 @@ namespace WebApplication1.Controllers
             return View(PopulateViewModel());
         }
 
-        public HomeViewModel PopulateViewModel()
-        {
-            var retModel = new HomeViewModel();
-            retModel.UrlList = DBCONTEXT.Urls.ToList();
-            var identity = retModel.UrlList.First().CurrentUrl.UrlIdentity;
-            var item = DBCONTEXT.Urls.First(i => i.Id == identity);
-            retModel.UrlCurrent = item.UrlPart;
-
-            return retModel;
-        }
-
         public PartialViewResult AddUrl(string Url)
         {
-            var itemToAdd = new WebApplication1.Models.Uri();
-            itemToAdd.UrlPart = (Url);
-            itemToAdd.UrlIdentity = 1;
-            DBCONTEXT.Urls.Add(itemToAdd);
-            DBCONTEXT.SaveChanges();
+            try
+            {
+                var itemToAdd = new WebApplication1.Models.Uri();
+                itemToAdd.UrlPart = (Url);
+                itemToAdd.UrlIdentity = 1;
+                DBCONTEXT.Urls.Add(itemToAdd);
+                DBCONTEXT.SaveChanges();
 
-            return PartialView("UrlListPartial", PopulateViewModel());
+                return PartialView("UrlListPartial", PopulateViewModel());
+            }
+            catch(Exception ex)
+            {
+                //TODOS
+                return PartialView();
+            }
         }
 
 
-        public PartialViewResult NextUrl()
+        public async Task<PartialViewResult> NextUrl(string _rowVersion)
         {
             var retModel = new HomeViewModel();
             retModel.UrlList = DBCONTEXT.Urls.ToList();
+            byte[] rowVersion = Convert.FromBase64String(_rowVersion);
 
-            if(retModel.UrlList.Count() < 2 )
+            if(retModel.UrlList.Count() < 2 ) //IF LIST IS ONLY 1 ELEMENT
             {
                 retModel.UrlCurrent = DBCONTEXT.Urls.First().UrlPart;
                 return PartialView("IFramePartial", retModel);
             }
-            else
+            else //IF LIST IS SEVERAL ELEMENTS
             {
-                var currentId = retModel.UrlList.First().CurrentUrl.UrlIdentity;
-                var index = retModel.UrlList.FindIndex(m => m.Id == currentId);
+                string[] fieldsToBind = new string[] { "RowVersion", "UrlIdentity" };
+                var itemToUpdate = await DBCONTEXT.CurrUrl.FindAsync(1);
 
-                //IF AT END OF LIST
-                if(index+1 >= retModel.UrlList.Count()) 
+                if (TryUpdateModel(itemToUpdate, fieldsToBind))
                 {
-                    index = 0;
-                    var ret = DBCONTEXT.CurrUrl.Single(a => a.Id == 1);
-                    ret.UrlIdentity = retModel.UrlList[index].Id;
-                    DBCONTEXT.SaveChanges();
+                    var currentId = retModel.UrlList.First().CurrentUrl.UrlIdentity;
+                    var index = retModel.UrlList.FindIndex(m => m.Id == currentId);
 
-                    retModel.UrlCurrent = retModel.UrlList[index].UrlPart;
+                    try
+                    { 
+                        //IF AT END OF LIST
+                        if(index+1 >= retModel.UrlList.Count()) 
+                        {
+                            index = 0;
+                            //UpdateDB ITEM
+                            itemToUpdate.UrlIdentity = retModel.UrlList[index].Id;
+                            DBCONTEXT.Entry(itemToUpdate).OriginalValues["RowVersion"] = rowVersion;
+                            DBCONTEXT.Entry(itemToUpdate).State = EntityState.Modified;
+                            await DBCONTEXT.SaveChangesAsync();
+
+                            //Update Model with latest vals.
+                            retModel = PopulateViewModel();
+                            return PartialView("IFramePartial", retModel);
+                        }
+                        else
+                        {
+                            //UpdateDB ITEM
+                            index = index+1;
+                            itemToUpdate.UrlIdentity = retModel.UrlList[index].Id;
+                            DBCONTEXT.Entry(itemToUpdate).OriginalValues["RowVersion"] = rowVersion;
+                            DBCONTEXT.Entry(itemToUpdate).State = EntityState.Modified;
+                            await DBCONTEXT.SaveChangesAsync();
+
+                            //Update Model with latest vals.
+                            retModel = PopulateViewModel();
+                            return PartialView("IFramePartial", retModel);
+                        }
+                    }
+                    catch(DbUpdateConcurrencyException)
+                    {
+                        //Someone else nexted before. Feed user latest Model vals
+                        retModel = PopulateViewModel();
+                    }
+                    catch(Exception)
+                    {
+                        //WHy am i here ?
+
+                        retModel = PopulateViewModel();
+                    }
                 }
                 else
-                { 
-                    var ret_ = DBCONTEXT.CurrUrl.Single(a => a.Id == 1);
-                    ret_.UrlIdentity = retModel.UrlList[index + 1].Id;
-                    DBCONTEXT.SaveChanges();
-                
-                    retModel.UrlCurrent = retModel.UrlList[index+1].UrlPart;
+                {
+                    retModel = PopulateViewModel();
                 }
-                
             }
             return PartialView("IFramePartial", retModel);
         }
+
+        public PartialViewResult Sync()
+        {
+            return PartialView("IFramePartial", PopulateIFrame());
+        }
+
+        public JsonResult Syn(string rowV)
+        {
+            if (IsSync(rowV))
+                return this.Json(new { syn = true });
+            else
+                return this.Json(new {syn = false});
+        }
+
+
+
+
+
+
 
 
         public ActionResult About()
@@ -91,5 +145,42 @@ namespace WebApplication1.Controllers
 
             return View();
         }
+
+
+        #region DBHelpers
+        public bool IsSync(string rowV)
+        {
+            var UrlList = DBCONTEXT.Urls.ToList();
+            var identity = UrlList.First().CurrentUrl;
+            if (Convert.ToBase64String(identity.RowVersion) == rowV)
+                return true;
+            else
+                return false;
+        }
+
+
+        public HomeViewModel PopulateViewModel()
+        {
+            var retModel = new HomeViewModel();
+            retModel.UrlList = DBCONTEXT.Urls.ToList();
+            var identity = retModel.UrlList.First().CurrentUrl; //CurrentURL row
+            var CurrentUrl = retModel.UrlList.First(i => i.Id == identity.UrlIdentity);//Get URL item using currentUrlIdentifier
+            retModel.UrlCurrent = CurrentUrl.UrlPart;
+            retModel.RowVersion = Convert.ToBase64String(identity.RowVersion);
+            return retModel;
+        }
+
+        public HomeViewModel PopulateIFrame()
+        {
+            var retModel = new HomeViewModel();
+            var UrlList = DBCONTEXT.Urls.ToList();
+            var identity = UrlList.First().CurrentUrl; //CurrentURL row
+            var CurrentUrl = UrlList.First(i => i.Id == identity.UrlIdentity);//Get URL item using currentUrlIdentifier
+            retModel.UrlCurrent = CurrentUrl.UrlPart;
+            retModel.RowVersion = Convert.ToBase64String(identity.RowVersion);
+            return retModel;
+        }
+
+        #endregion
     }
 }

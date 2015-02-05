@@ -47,7 +47,7 @@
 <script type="text/javascript">
     $('#submitUrl').on('click', AddUrlAjax);
     var postData;
-
+    /****************** ADDING URL **********************************/
     function AddUrlAjax() {
         var postData =
         {
@@ -65,25 +65,19 @@
         });
     }
 
-    /**************************synkka mera****************************/
+    /************************** SYNCING ****************************/
     var ajaxRequest;
-    var GLobalPostData = {
-        rowV: "@Model.RowVersion",
-    };
 
-    function HandleAjaxResponse() {
-        setTimeout(function () {
-            $.when(Poll()).done(function (response) {
-                if (response.syn === true) {
-                    HandleAjaxResponse();
-
+    function Sync() {
+        return $.ajax({
+            type: "POST",
+            url: "@Url.Action("Sync", "Home")",
+            dataType: "html",
+            success:
+                function (result) {
+                    $('#diviFramePart').html(result);
                 }
-                else if (response.syn === false) {
-                    console.log(GLobalPostData);
-                    Sync();
-                }
-            });
-        }, 500);
+        });
     }
 
     function Poll() {
@@ -91,26 +85,24 @@
             type: "POST",
             url: "@Url.Action("Syn", "Home")",
             data: GLobalPostData,
-            dataType: "json"
-        });
+        dataType: "json"
+    });
     }
-    function Sync() {
-        return $.ajax({
-            type: "POST",
-            url: "@Url.Action("Sync", "Home")",
-            dataType: "html",
-            success:
-            function (result) {
-                $('#diviFramePart').html(result);
-                HandleAjaxResponse();
-            }
-        });
-    }
-    /*************************************************/
-    HandleAjaxResponse();
-    /*************************************************/
 
-    /*Load JewTube APi*/
+    function HandleAjaxResponse() {
+        setTimeout(function () {
+            $.when(Poll()).done(function (response) {
+                if (response.syn === true) {
+                    HandleAjaxResponse();
+                }
+                else if (response.syn === false) {
+                    Sync();
+                }
+            });
+        }, 500);
+    }
+
+    /*********************** Load JewTube APi ********************************/
     if (typeof youtube_api_init == 'undefined') {
         var tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";

@@ -5,20 +5,28 @@
         $("#nextUrl").unbind();
         $('#nextUrl').on('click', NextUrlAjax);
     });
+    var GlobalYouTime;
+    var GlobalRowV;
+    var GLobalPostData;
+    function SetGlobalPostData() {
+        GLobalPostData = {
+            rowV: GlobalRowV,
+            yTime: GlobalYouTime
+        };
+    }
+    GlobalRowV = "@Model.RowVersion";
 
-    GLobalPostData = {
-        rowV: "@Model.RowVersion",
-    };
+    SetGlobalPostData();
+     
 
 
-    /*Since this is a parialView DOminsert. Have to "fake" youtubeApiInit When nexting.*/
+    /*Since this is a parialView DOMinserts. Have to "fake" youtubeApiInit When nexting.*/
     if (typeof youtube_api_init != 'undefined') {
         onYouTubeIframeAPIReady();
     }
 
     var player;
     function onYouTubeIframeAPIReady() {
-        console.log("YoutubeApi Ready")
         player = new YT.Player('player', {
             height: '400',
             width: '640',
@@ -32,6 +40,8 @@
 
     function onPlayerReady(event) {
         event.target.playVideo();
+        /*Start recursive polling after plaeyr loaded*/
+        HandleAjaxResponse();
     }
 
     function onPlayerStateChange(event) {
@@ -40,7 +50,7 @@
         }
     }
 
-    function NextUrlAjax() {
+    function NextUrlAjax(e) {
         var postData =
         {
             _rowVersion: "@Model.RowVersion"

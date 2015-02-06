@@ -7,7 +7,7 @@ namespace WebApplication1.Models
 {
     public class HomeViewModel
     {
-        public List<Uri> UrlList { get; set; }
+        public List<Url> UrlList { get; set; }
         public string UrlCurrent { get; set; }
         public string RowVersion { get; set; }
     }

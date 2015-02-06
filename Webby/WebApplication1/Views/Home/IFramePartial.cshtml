@@ -53,7 +53,7 @@
     function NextUrlAjax(e) {
         var postData =
         {
-            _rowVersion: "@Model.RowVersion"
+            rowVersion: "@Model.RowVersion"
         };
         return $.ajax({
             type: "POST",

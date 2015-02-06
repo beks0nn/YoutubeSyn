@@ -4,17 +4,21 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using WebApplication1.Models;
+using WebApplication1.MongoDBLayer;
 using System.Data.Entity.Infrastructure;
 using System.Threading.Tasks;
 using System.Data.Entity;
 using System.Net.Http;
 using System.Net;
+using MongoDB.Driver;
 
 namespace WebApplication1.Controllers
 {
-    public class HomeController : Controller
+
+    public class HomeController : Controller, IDisposable
     {
-        ApplicationDbContext DBCONTEXT = new ApplicationDbContext();
+        private MongoData mongo = new MongoData();
+        private bool disposed = false;
 
         public ActionResult Index()
         {
@@ -25,11 +29,9 @@ namespace WebApplication1.Controllers
         {
             try
             {
-                var itemToAdd = new WebApplication1.Models.Uri();
-                itemToAdd.UrlPart = (Url);
-                itemToAdd.UrlIdentity = 1;
-                DBCONTEXT.Urls.Add(itemToAdd);
-                DBCONTEXT.SaveChanges();
+                var urlToAdd = new Url();
+                urlToAdd.UrlPart = Url;
+                mongo.CreateUrl(urlToAdd);
 
                 return PartialView("UrlListPartial", PopulateViewModel());
             }
@@ -40,76 +42,54 @@ namespace WebApplication1.Controllers
             }
         }
 
-
-        public async Task<PartialViewResult> NextUrl(string _rowVersion)
+        public PartialViewResult NextUrl(string rowVersion)
         {
             var retModel = new HomeViewModel();
-            retModel.UrlList = DBCONTEXT.Urls.ToList();
-            byte[] rowVersion = Convert.FromBase64String(_rowVersion);
+            retModel.UrlList = mongo.GetAllUrls();
 
             if(retModel.UrlList.Count() < 2 ) //IF LIST IS ONLY 1 ELEMENT
             {
-                retModel.UrlCurrent = DBCONTEXT.Urls.First().UrlPart;
+                retModel.UrlCurrent = retModel.UrlList.First().UrlPart;
                 return PartialView("IFramePartial", retModel);
             }
             else //IF LIST IS SEVERAL ELEMENTS
             {
-                string[] fieldsToBind = new string[] { "RowVersion", "UrlIdentity" };
-                var itemToUpdate = await DBCONTEXT.CurrUrl.FindAsync(1);
+                var currUrlObj = mongo.GetAllCurrUrls().First();
+                var currUrlObjPOINTINGAT = currUrlObj.UrlIdentity;
+                var index = retModel.UrlList.FindIndex(m => m.Id == currUrlObjPOINTINGAT);
 
-                if (TryUpdateModel(itemToUpdate, fieldsToBind))
-                {
-                    var currentId = retModel.UrlList.First().CurrentUrl.UrlIdentity;
-                    var index = retModel.UrlList.FindIndex(m => m.Id == currentId);
-
-                    try
-                    { 
-                        //IF AT END OF LIST
-                        if(index+1 >= retModel.UrlList.Count()) 
-                        {
-                            index = 0;
-                            //UpdateDB ITEM
-                            itemToUpdate.UrlIdentity = retModel.UrlList[index].Id;
-                            DBCONTEXT.Entry(itemToUpdate).OriginalValues["RowVersion"] = rowVersion;
-                            DBCONTEXT.Entry(itemToUpdate).State = EntityState.Modified;
-                            await DBCONTEXT.SaveChangesAsync();
-
-                            //Update Model with latest vals.
-                            retModel = PopulateViewModel();
-                            return PartialView("IFramePartial", retModel);
-                        }
-                        else
-                        {
-                            //UpdateDB ITEM
-                            index = index+1;
-                            itemToUpdate.UrlIdentity = retModel.UrlList[index].Id;
-                            DBCONTEXT.Entry(itemToUpdate).OriginalValues["RowVersion"] = rowVersion;
-                            DBCONTEXT.Entry(itemToUpdate).State = EntityState.Modified;
-                            await DBCONTEXT.SaveChangesAsync();
-
-                            //Update Model with latest vals.
-                            retModel = PopulateViewModel();
-                            return PartialView("IFramePartial", retModel);
-                        }
-                    }
-                    catch(DbUpdateConcurrencyException)
+                try
+                { 
+                    //IF AT END OF LIST
+                    if(index+1 >= retModel.UrlList.Count()) 
                     {
-                        //Someone else nexted before. Feed user latest Model vals
-                        retModel = PopulateViewModel();
-                    }
-                    catch(Exception)
-                    {
-                        //WHy am i here ?
+                        index = 0;
+                        //UpdateDB ITEM
+                        var newid = retModel.UrlList[index].Id;
+                        mongo.updateCurrUrl(currUrlObj.Id, newid);
 
+                        //Update Model with latest vals.
                         retModel = PopulateViewModel();
+                        return PartialView("IFramePartial", retModel);
+                    }
+                    else
+                    {
+                        //UpdateDB ITEM
+                        index = index+1;
+                        var newid = retModel.UrlList[index].Id;
+                        mongo.updateCurrUrl(currUrlObj.Id, newid);
+
+                        //Update Model with latest vals.
+                        retModel = PopulateViewModel();
+                        return PartialView("IFramePartial", retModel);
                     }
                 }
-                else
+                catch(Exception ex)
                 {
-                    retModel = PopulateViewModel();
+                    //hmm
+                    return PartialView("IFramePartial", PopulateViewModel());
                 }
             }
-            return PartialView("IFramePartial", retModel);
         }
 
         public PartialViewResult Sync()
@@ -145,9 +125,9 @@ namespace WebApplication1.Controllers
         #region DBHelpers
         public bool IsSync(string rowV)
         {
-            var UrlList = DBCONTEXT.Urls.ToList();
-            var identity = UrlList.First().CurrentUrl;
-            if (Convert.ToBase64String(identity.RowVersion) == rowV)
+            var urlList = mongo.GetAllUrls();
+            var currUrl = mongo.GetAllCurrUrls().First();
+            if (currUrl.version.ToString() == rowV)
                 return true;
             else
                 return false;
@@ -157,25 +137,48 @@ namespace WebApplication1.Controllers
         public HomeViewModel PopulateViewModel()
         {
             var retModel = new HomeViewModel();
-            retModel.UrlList = DBCONTEXT.Urls.ToList();
-            var identity = retModel.UrlList.First().CurrentUrl; //CurrentURL row
-            var CurrentUrl = retModel.UrlList.First(i => i.Id == identity.UrlIdentity);//Get URL item using currentUrlIdentifier
+            retModel.UrlList = mongo.GetAllUrls();
+            var identity = mongo.GetAllCurrUrls().First();
+            var CurrentUrl = retModel.UrlList.First(i => i.Id == identity.UrlIdentity);
             retModel.UrlCurrent = CurrentUrl.UrlPart;
-            retModel.RowVersion = Convert.ToBase64String(identity.RowVersion);
+            retModel.RowVersion = identity.version.ToString();
             return retModel;
         }
 
         public HomeViewModel PopulateIFrame()
         {
             var retModel = new HomeViewModel();
-            var UrlList = DBCONTEXT.Urls.ToList();
-            var identity = UrlList.First().CurrentUrl; //CurrentURL row
+            var UrlList = mongo.GetAllUrls();
+            var identity = mongo.GetAllCurrUrls().First();
             var CurrentUrl = UrlList.First(i => i.Id == identity.UrlIdentity);//Get URL item using currentUrlIdentifier
             retModel.UrlCurrent = CurrentUrl.UrlPart;
-            retModel.RowVersion = Convert.ToBase64String(identity.RowVersion);
+            retModel.RowVersion = identity.version.ToString();
             return retModel;
         }
 
         #endregion
+
+        # region IDisposable
+
+        new protected void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        new protected virtual void Dispose(bool disposing)
+        {
+            if (!this.disposed)
+            {
+                if (disposing)
+                {
+                    this.mongo.Dispose();
+                }
+            }
+
+            this.disposed = true;
+        }
+
+        # endregion
     }
 }

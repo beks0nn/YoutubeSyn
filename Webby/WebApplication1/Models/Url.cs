@@ -6,16 +6,15 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson.Serialization.IdGenerators;
 using MongoDB.Bson;
 
+
 namespace WebApplication1.Models
 {
-    public class CurrUrl
+    public class Url
     {
         [BsonId(IdGenerator = typeof(CombGuidGenerator))]
         public Guid Id { get; set; }
 
-        [BsonElement("CurrUrl")]
-        public Guid UrlIdentity { get; set; }
-        [BsonElement("version")]
-        public Guid version { get; set; }
+        [BsonElement("Url")]
+        public string UrlPart { get; set; }
     }
 }

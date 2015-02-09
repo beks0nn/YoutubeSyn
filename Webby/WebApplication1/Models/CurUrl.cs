@@ -17,5 +17,7 @@ namespace WebApplication1.Models
         public Guid UrlIdentity { get; set; }
         [BsonElement("version")]
         public Guid version { get; set; }
+        [BsonElement("time")]
+        public string time { get; set; }
     }
 }

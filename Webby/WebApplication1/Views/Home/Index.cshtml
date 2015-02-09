@@ -92,14 +92,23 @@
     function HandleAjaxResponse() {
         setTimeout(function () {
             $.when(Poll()).done(function (response) {
-                if (response.syn === true) {
+                if (response.syn === "ok") {
+                    SetGlobalPostData();
+                    SetHasSynced();
                     HandleAjaxResponse();
                 }
-                else if (response.syn === false) {
+                else if (response.syn === "!ok"){
+                    SetGlobalPostData();
                     Sync();
                 }
+                else{//response is time
+                    player.seekTo(response.syn);
+                    SetGlobalPostData();
+                    SetHasSynced();
+                    HandleAjaxResponse();
+                }
             });
-        }, 500);
+        }, 1000);
     }
 
     /*********************** Load JewTube APi ********************************/

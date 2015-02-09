@@ -183,6 +183,7 @@
     <Compile Include="Models\HomeViewModel.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\IFrameVM.cs" />
+    <Compile Include="Models\SyncObj.cs" />
     <Compile Include="Models\Url.cs" />
     <Compile Include="MongoDBLayer\MongoData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -11,12 +11,15 @@ using System.Data.Entity;
 using System.Net.Http;
 using System.Net;
 using MongoDB.Driver;
+using System.Globalization;
 
 namespace WebApplication1.Controllers
 {
 
     public class HomeController : Controller, IDisposable
     {
+        
+
         private MongoData mongo = new MongoData();
         private bool disposed = false;
 
@@ -46,6 +49,8 @@ namespace WebApplication1.Controllers
         {
             var retModel = new HomeViewModel();
             retModel.UrlList = mongo.GetAllUrls();
+            var currUrlObj = mongo.GetAllCurrUrls().First();
+            mongo.updateCurrUrlTime(currUrlObj.Id, "0");
 
             if(retModel.UrlList.Count() < 2 ) //IF LIST IS ONLY 1 ELEMENT
             {
@@ -54,7 +59,7 @@ namespace WebApplication1.Controllers
             }
             else //IF LIST IS SEVERAL ELEMENTS
             {
-                var currUrlObj = mongo.GetAllCurrUrls().First();
+                
                 var currUrlObjPOINTINGAT = currUrlObj.UrlIdentity;
                 var index = retModel.UrlList.FindIndex(m => m.Id == currUrlObjPOINTINGAT);
 
@@ -69,7 +74,7 @@ namespace WebApplication1.Controllers
                         mongo.updateCurrUrl(currUrlObj.Id, newid);
 
                         //Update Model with latest vals.
-                        retModel = PopulateViewModel();
+                        retModel = PopulateIFrame();
                         return PartialView("IFramePartial", retModel);
                     }
                     else
@@ -80,14 +85,14 @@ namespace WebApplication1.Controllers
                         mongo.updateCurrUrl(currUrlObj.Id, newid);
 
                         //Update Model with latest vals.
-                        retModel = PopulateViewModel();
+                        retModel = PopulateIFrame();
                         return PartialView("IFramePartial", retModel);
                     }
                 }
                 catch(Exception ex)
                 {
                     //hmm
-                    return PartialView("IFramePartial", PopulateViewModel());
+                    return PartialView("IFramePartial", PopulateIFrame());
                 }
             }
         }
@@ -97,14 +102,42 @@ namespace WebApplication1.Controllers
             return PartialView("IFramePartial", PopulateIFrame());
         }
 
-        public JsonResult Syn(string rowV)
+        public JsonResult Syn(string rowV, string yTime)
         {
-            if (IsSync(rowV))
-                return this.Json(new { syn = true });
-            else
-                return this.Json(new {syn = false});
+            var res = IsSync(rowV,yTime);
+            return this.Json(new { syn = res });
         }
 
+        public string IsSync(string rowV, string yTime)
+        {
+            var currUrl = mongo.GetAllCurrUrls().First();
+            decimal yTimeIN = decimal.Parse(yTime);
+            decimal yTimeCurr = decimal.Parse(currUrl.time);
+            var diff = yTimeIN - yTimeCurr;
+
+            if (currUrl.version.ToString() == rowV)
+            {
+                if (diff <= -5 || diff >= 5)
+                {
+                    return currUrl.time;  //seek to this time.
+                }
+                else
+                {
+                    //DIFF OK update this time
+                    mongo.updateCurrUrlTime(currUrl.Id, yTime);
+                    return "ok"; // Keep polling
+                }
+
+            }
+            else
+                return "!ok";//Will next if this response 
+        }
+
+        public void setTime(string yTime)
+        {
+            var currUrl = mongo.GetAllCurrUrls().First();
+            mongo.updateCurrUrlTime(currUrl.Id, yTime);
+        }
 
 
         public ActionResult About()
@@ -123,36 +156,32 @@ namespace WebApplication1.Controllers
 
 
         #region DBHelpers
-        public bool IsSync(string rowV)
-        {
-            var urlList = mongo.GetAllUrls();
-            var currUrl = mongo.GetAllCurrUrls().First();
-            if (currUrl.version.ToString() == rowV)
-                return true;
-            else
-                return false;
-        }
-
 
         public HomeViewModel PopulateViewModel()
         {
             var retModel = new HomeViewModel();
-            retModel.UrlList = mongo.GetAllUrls();
-            var identity = mongo.GetAllCurrUrls().First();
-            var CurrentUrl = retModel.UrlList.First(i => i.Id == identity.UrlIdentity);
+            var urlList = mongo.GetAllUrls();
+            var currentUrlObj = mongo.GetAllCurrUrls().First();
+            var CurrentUrl = urlList.First(i => i.Id == currentUrlObj.UrlIdentity);
+
+            retModel.UrlList = urlList;
             retModel.UrlCurrent = CurrentUrl.UrlPart;
-            retModel.RowVersion = identity.version.ToString();
+            retModel.RowVersion = currentUrlObj.version.ToString();
+
             return retModel;
         }
 
         public HomeViewModel PopulateIFrame()
         {
             var retModel = new HomeViewModel();
-            var UrlList = mongo.GetAllUrls();
-            var identity = mongo.GetAllCurrUrls().First();
-            var CurrentUrl = UrlList.First(i => i.Id == identity.UrlIdentity);//Get URL item using currentUrlIdentifier
+            var urlList = mongo.GetAllUrls();
+            var currentUrlObj = mongo.GetAllCurrUrls().First();
+            var CurrentUrl = urlList.First(i => i.Id == currentUrlObj.UrlIdentity);
+
+            /*** Send less data... ***/
             retModel.UrlCurrent = CurrentUrl.UrlPart;
-            retModel.RowVersion = identity.version.ToString();
+            retModel.RowVersion = currentUrlObj.version.ToString();
+
             return retModel;
         }
 

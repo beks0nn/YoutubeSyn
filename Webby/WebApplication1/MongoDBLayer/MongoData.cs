@@ -32,6 +32,7 @@ namespace WebApplication1.MongoDBLayer
         {
             try
             {
+
                 MongoCollection<Url> collection = GetUrlsCollection();
                 return collection.FindAll().ToList<Url>();
             }
@@ -83,6 +84,14 @@ namespace WebApplication1.MongoDBLayer
             var update = Update<CurrUrl>.Set(e => e.UrlIdentity, pointTo).Set(e=> e.version, Guid.NewGuid()); // update modifiers
             collection.Update(query, update);
         }
+        public void updateCurrUrlTime(Guid id, string time)
+        {
+            var collection = getCurrUrlsCollectionForEdit();
+            var query = Query<CurrUrl>.EQ(e => e.Id, id);
+            var update = Update<CurrUrl>.Set(e => e.time, time); // update modifiers
+            collection.Update(query, update);
+        }
+
 
         public List<CurrUrl> GetAllCurrUrls()
         {

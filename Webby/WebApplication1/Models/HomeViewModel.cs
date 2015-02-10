@@ -10,5 +10,6 @@ namespace WebApplication1.Models
         public List<Url> UrlList { get; set; }
         public string UrlCurrent { get; set; }
         public string RowVersion { get; set; }
+        public string CurrentTime { get; set; }
     }
 }

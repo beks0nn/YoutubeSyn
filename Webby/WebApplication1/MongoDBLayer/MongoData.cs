@@ -88,7 +88,7 @@ namespace WebApplication1.MongoDBLayer
         {
             var collection = getCurrUrlsCollectionForEdit();
             var query = Query<CurrUrl>.EQ(e => e.Id, id);
-            var update = Update<CurrUrl>.Set(e => e.time, time); // update modifiers
+            var update = Update<CurrUrl>.Set(e => e.time, time).Set(e => e.version,Guid.NewGuid()); // update modifiers
             collection.Update(query, update);
         }
 

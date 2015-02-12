@@ -66,9 +66,8 @@
 
             syncer.client.nextUrl = function (returnUrl) {
                 CurrentUrl = returnUrl;
-                var self = $("#" + CurrentUrl);
-                self.siblings().removeClass('active');
-                self.addClass('active');
+                syncUrlList(CurrentUrl);
+
                 player.stopVideo();
                 player.loadVideoById(CurrentUrl);
             };
@@ -80,12 +79,7 @@
 
             syncer.client.goToUrl = function (returnUrl) {
                 CurrentUrl = returnUrl;
-                var self = $("#" + CurrentUrl);
-                self.siblings().removeClass('active');
-                self.addClass('active');
-                self.siblings().find('div').addClass('hidden');
-                self.find("div").removeClass('hidden');
-
+                syncUrlList(CurrentUrl);
                 player.stopVideo();
                 player.loadVideoById(CurrentUrl);
             };
@@ -169,6 +163,14 @@
         function htmlEncode(value) {
             var encodedValue = $('<div />').text(value).html();
             return encodedValue;
+        }
+
+        function syncUrlList(url){
+            var self = $("#" + url);
+            self.siblings().removeClass('active');
+            self.addClass('active');
+            self.siblings().find('div').addClass('hidden');
+            self.find("div").removeClass('hidden');
         }
 </script>
 }

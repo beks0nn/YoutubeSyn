@@ -172,29 +172,13 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
-    <Compile Include="App_Start\Startup.Auth.cs" />
-    <Compile Include="Controllers\AccountController.cs" />
-    <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\SyncController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Hubs\SyncHub.cs" />
-    <Compile Include="Migrations\201502021436001_FUCK YOU.cs" />
-    <Compile Include="Migrations\201502021436001_FUCK YOU.Designer.cs">
-      <DependentUpon>201502021436001_FUCK YOU.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201502030829573_RowVersion.cs" />
-    <Compile Include="Migrations\201502030829573_RowVersion.Designer.cs">
-      <DependentUpon>201502030829573_RowVersion.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\Configuration.cs" />
-    <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\CurUrl.cs" />
-    <Compile Include="Models\HomeViewModel.cs" />
-    <Compile Include="Models\IdentityModels.cs" />
-    <Compile Include="Models\IFrameVM.cs" />
-    <Compile Include="Models\SyncObj.cs" />
+    <Compile Include="Models\SyncViewModel.cs" />
     <Compile Include="Models\Url.cs" />
     <Compile Include="MongoDBLayer\MongoData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -244,22 +228,7 @@
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Home\About.cshtml" />
-    <Content Include="Views\Home\Contact.cshtml" />
-    <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Scripts\jquery-1.10.2.min.map" />
-    <Content Include="Views\Account\_ChangePasswordPartial.cshtml" />
-    <Content Include="Views\Account\_ExternalLoginsListPartial.cshtml" />
-    <Content Include="Views\Account\_RemoveAccountPartial.cshtml" />
-    <Content Include="Views\Account\_SetPasswordPartial.cshtml" />
-    <Content Include="Views\Account\ExternalLoginConfirmation.cshtml" />
-    <Content Include="Views\Account\ExternalLoginFailure.cshtml" />
-    <Content Include="Views\Account\Login.cshtml" />
-    <Content Include="Views\Account\Manage.cshtml" />
-    <Content Include="Views\Account\Register.cshtml" />
-    <Content Include="Views\Shared\_LoginPartial.cshtml" />
-    <Content Include="Views\Home\UrlListPartial.cshtml" />
-    <Content Include="Views\Home\IFramePartial.cshtml" />
     <Content Include="Views\Sync\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
@@ -271,14 +240,6 @@
     <Content Include="fonts\glyphicons-halflings-regular.eot" />
     <Content Include="packages.config" />
     <None Include="Project_Readme.html" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Migrations\201502021436001_FUCK YOU.resx">
-      <DependentUpon>201502021436001_FUCK YOU.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201502030829573_RowVersion.resx">
-      <DependentUpon>201502030829573_RowVersion.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

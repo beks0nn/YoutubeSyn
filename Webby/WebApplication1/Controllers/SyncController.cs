@@ -18,9 +18,9 @@ namespace WebApplication1.Controllers
             return View(PopulateViewModel());
         }
 
-        public HomeViewModel PopulateViewModel()
+        public SyncViewModel PopulateViewModel()
         {
-            var retModel = new HomeViewModel();
+            var retModel = new SyncViewModel();
             var urlList = mongo.GetAllUrls();
             var currentUrlObj = mongo.GetAllCurrUrls().First();
             var CurrentUrl = urlList.First(i => i.Id == currentUrlObj.UrlIdentity);

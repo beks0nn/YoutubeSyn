@@ -5,7 +5,7 @@ using System.Web;
 
 namespace WebApplication1.Models
 {
-    public class HomeViewModel
+    public class SyncViewModel
     {
         public List<Url> UrlList { get; set; }
         public string UrlCurrent { get; set; }

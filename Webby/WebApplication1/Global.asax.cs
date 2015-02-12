@@ -20,6 +20,7 @@ namespace WebApplication1
             BundleConfig.RegisterBundles(BundleTable.Bundles);
 
             CultureInfo.DefaultThreadCurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
+
         }
     }
 }

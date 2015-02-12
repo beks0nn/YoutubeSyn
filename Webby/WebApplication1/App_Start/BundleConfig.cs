@@ -31,6 +31,9 @@ namespace WebApplication1
                       "~/Content/site.css",
                       "~/Content/clean-blog.css"
                       ));
+
+            //!!Comment out if you don't want minification!!.
+            //BundleTable.EnableOptimizations = true;
         }
     }
 }

@@ -98,6 +98,7 @@ namespace WebApplication1.Hubs
         {
             var currUrl = mongo.GetAllCurrUrls().First();
             var toId = mongo.GetAllUrls().Single(e => e.UrlPart == url);
+            mongo.updateCurrUrlTime(currUrl.Id, "0");// make function for both pls
             mongo.updateCurrUrl(currUrl.Id, toId.Id);
 
             Clients.All.goToUrl(url);

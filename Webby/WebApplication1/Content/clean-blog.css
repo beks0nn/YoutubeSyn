@@ -434,3 +434,15 @@ body {
 .block{
     display:block;
 }
+
+.urlinputdiv{
+        overflow: hidden; 
+        padding-right: .5em; 
+        float:left;
+}
+.urlinput{
+    height:3.5em;
+}
+.mainbtn{
+    height:3.5em;
+}

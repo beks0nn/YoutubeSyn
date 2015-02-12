@@ -44,7 +44,6 @@ namespace WebApplication1.Hubs
                     {
                         index = 0;
                         var newid = urlList[index].Id;
-                        mongo.updateCurrUrlTime(currUrlObj.Id, "0"); // Todos make 3rd database func to do  both?
                         mongo.updateCurrUrl(currUrlObj.Id, newid);
                         returnUrl = urlList.First().UrlPart;
                     }
@@ -53,7 +52,6 @@ namespace WebApplication1.Hubs
                         //UpdateDB ITEM
                         index = index + 1;
                         var newid = urlList[index].Id;
-                        mongo.updateCurrUrlTime(currUrlObj.Id, "0"); // Todos make 3rd database func to do  both?
                         mongo.updateCurrUrl(currUrlObj.Id, newid);
 
 
@@ -98,7 +96,6 @@ namespace WebApplication1.Hubs
         {
             var currUrl = mongo.GetAllCurrUrls().First();
             var toId = mongo.GetAllUrls().Single(e => e.UrlPart == url);
-            mongo.updateCurrUrlTime(currUrl.Id, "0");// make function for both pls
             mongo.updateCurrUrl(currUrl.Id, toId.Id);
 
             Clients.All.goToUrl(url);

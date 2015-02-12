@@ -64,8 +64,7 @@
         $(function () {
             // CLIENT SIDE FUNCTIONS (USED BY HUB)
             syncer.client.addUrl = function (url) {
-                // Add the url to list.
-                $('#urlListUL').append('<li id="' + url + '" class="list-group-item">' + htmlEncode(url) + '</li>');
+                $('#urlListUL').append('<li id="' + url + '"class="list-group-item urlli">' + htmlEncode(url) + '<div class="glyphicon glyphicon-remove urldiv hidden" id="deleteUrl" /></li>');
             };
 
             syncer.client.nextUrl = function (returnUrl) {
@@ -105,8 +104,10 @@
             $.connection.hub.start().done(function () {
                 //Bindklick events after the Websocket is open. to ensure response.
                 $('#addurl').click(function () {
-                    syncer.server.addUrl($('#url').val());
-                    $('#url').val('');
+                    if ($('#url').val().length !== 0) {
+                        syncer.server.addUrl($('#url').val());
+                        $('#url').val('');
+                    }
                 });
 
                 $('#nexturl').click(function () {

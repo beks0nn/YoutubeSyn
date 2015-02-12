@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using Microsoft.AspNet.SignalR;
 using WebApplication1.MongoDBLayer;
 using WebApplication1.Models;
@@ -10,8 +8,9 @@ namespace WebApplication1.Hubs
 {
     public class SyncHub : Hub
     {
-        static Random rnd = new Random();
+        private static Random rnd = new Random();
         private MongoData mongo = new MongoData();
+        private bool disposed = false;
 
         public void AddUrl(string url)
         {
@@ -116,7 +115,37 @@ namespace WebApplication1.Hubs
         public void DeleteUrl(string url)
         {
             mongo.DeleteUrl(url);
-            ShuffleUrl();//TODOS..
+            /*SHUFFLE CODE*/
+            var currUrl = mongo.GetAllCurrUrls().First();
+            var urlList = mongo.GetAllUrls().ToList();
+            var r = rnd.Next(urlList.Count);
+            mongo.updateCurrUrl(currUrl.Id, urlList[r].Id);
+            /**/
+            Clients.All.afterDelete(urlList[r].UrlPart, url);
+
         }
+
+        # region IDisposable
+
+        new protected void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        new protected virtual void Dispose(bool disposing)
+        {
+            if (!this.disposed)
+            {
+                if (disposing)
+                {
+                    this.mongo.Dispose();
+                }
+            }
+
+            this.disposed = true;
+        }
+
+        # endregion
     }
 }

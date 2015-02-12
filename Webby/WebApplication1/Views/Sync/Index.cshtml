@@ -80,16 +80,34 @@
 
             syncer.client.goToUrl = function (returnUrl) {
                 CurrentUrl = returnUrl;
+                var self = $("#" + CurrentUrl);
+                self.siblings().removeClass('active');
+                self.addClass('active');
+                self.siblings().find('div').addClass('hidden');
+                self.find("div").removeClass('hidden');
+
                 player.stopVideo();
                 player.loadVideoById(CurrentUrl);
             };
+
+            syncer.client.afterDelete = function (returnUrl, deleteThis) {
+                $('#' + deleteThis).remove();
+                CurrentUrl = returnUrl;
+                var self = $("#" + CurrentUrl);
+                self.siblings().removeClass('active');
+                self.addClass('active');
+                self.siblings().find('div').addClass('hidden');
+                self.find("div").removeClass('hidden');
+
+                player.stopVideo();
+                player.loadVideoById(CurrentUrl);
+            }
 
             // Start the connection.
             $.connection.hub.start().done(function () {
                 //Bindklick events after the Websocket is open. to ensure response.
                 $('#addurl').click(function () {
                     syncer.server.addUrl($('#url').val());
-                    //** Empty inputfield. **//
                     $('#url').val('');
                 });
 
@@ -108,10 +126,6 @@
                 $('#urlListUL').on('click', 'li', function () {
                     var self = $(this);
                     if (CurrentUrl !== self.attr("id")){
-                        self.siblings().removeClass('active');
-                        self.addClass('active');
-                        self.siblings().find('div').addClass('hidden');
-                        self.find("div").removeClass('hidden');
                         syncer.server.goToUrl(self.attr("id"));
                     }
                 });

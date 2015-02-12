@@ -1,17 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 using WebApplication1.Models;
 using WebApplication1.MongoDBLayer;
-using System.Data.Entity.Infrastructure;
-using System.Threading.Tasks;
-using System.Data.Entity;
-using System.Net.Http;
-using System.Net;
-using MongoDB.Driver;
-using System.Globalization;
 
 
 namespace WebApplication1.Controllers

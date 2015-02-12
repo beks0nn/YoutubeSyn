@@ -32,7 +32,6 @@ namespace WebApplication1.MongoDBLayer
         {
             try
             {
-
                 MongoCollection<Url> collection = GetUrlsCollection();
                 return collection.FindAll().ToList<Url>();
             }
@@ -48,6 +47,20 @@ namespace WebApplication1.MongoDBLayer
             try
             {
                 collection.Insert(url);
+            }
+            catch (MongoCommandException ex)
+            {
+                string msg = ex.Message;
+            }
+        }
+
+        public void DeleteUrl(string url)
+        {
+            var collection = getUrlsCollectionForEdit();
+            try
+            {
+                var query = Query<Url>.EQ(e => e.UrlPart, url);
+                collection.Remove(query);
             }
             catch (MongoCommandException ex)
             {

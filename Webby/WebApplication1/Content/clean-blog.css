@@ -411,3 +411,26 @@ body {
     height:400px;
     display:block;
 }
+
+.urlli{
+    text-align: left;
+}
+
+.urldiv{
+    display: inline-block;
+    float: right !important
+}
+
+.urldiv:active {
+    color:red;
+}
+.urldiv:hover {
+    cursor: pointer;
+}
+
+.hidden{
+    display:none;
+}
+.block{
+    display:block;
+}

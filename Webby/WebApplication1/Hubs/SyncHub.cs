@@ -10,6 +10,7 @@ namespace WebApplication1.Hubs
 {
     public class SyncHub : Hub
     {
+        static Random rnd = new Random();
         private MongoData mongo = new MongoData();
 
         public void AddUrl(string url)
@@ -17,69 +18,56 @@ namespace WebApplication1.Hubs
             var urlToAdd = new Url();
             urlToAdd.UrlPart = url;
             mongo.CreateUrl(urlToAdd);
-
-
-            //Push the data ..
             Clients.All.addUrl(url);
         }
 
         public void NextUrl()
         {
+            //Mabey not use mongoloid function here,  shape up
             var returnUrl = "";
-            var retModel = new HomeViewModel();
-            retModel.UrlList = mongo.GetAllUrls();
+            var urlList = mongo.GetAllUrls();
             var currUrlObj = mongo.GetAllCurrUrls().First();
-            mongo.updateCurrUrlTime(currUrlObj.Id, "0");
 
-            if (retModel.UrlList.Count() < 2) //IF LIST IS ONLY 1 ELEMENT
+            if (urlList.Count() < 2) //IF LIST IS ONLY 1 ELEMENT
             {
-                returnUrl = retModel.UrlList.First().UrlPart;
+                returnUrl = urlList.First().UrlPart;
                 
             }
             else //IF LIST IS SEVERAL ELEMENTS
             {
 
                 var currUrlObjPOINTINGAT = currUrlObj.UrlIdentity;
-                var index = retModel.UrlList.FindIndex(m => m.Id == currUrlObjPOINTINGAT);
-
+                var index = urlList.FindIndex(m => m.Id == currUrlObjPOINTINGAT);
                 try
                 {
                     //IF AT END OF LIST
-                    if (index + 1 >= retModel.UrlList.Count())
+                    if (index + 1 >= urlList.Count())
                     {
                         index = 0;
-                        //UpdateDB ITEM
-                        var newid = retModel.UrlList[index].Id;
+                        var newid = urlList[index].Id;
+                        mongo.updateCurrUrlTime(currUrlObj.Id, "0"); // Todos make 3rd database func to do  both?
                         mongo.updateCurrUrl(currUrlObj.Id, newid);
-
-                        //Update Model with latest vals.
-                        returnUrl = retModel.UrlList.First().UrlPart;
+                        returnUrl = urlList.First().UrlPart;
                     }
                     else
                     {
                         //UpdateDB ITEM
                         index = index + 1;
-                        var newid = retModel.UrlList[index].Id;
+                        var newid = urlList[index].Id;
+                        mongo.updateCurrUrlTime(currUrlObj.Id, "0"); // Todos make 3rd database func to do  both?
                         mongo.updateCurrUrl(currUrlObj.Id, newid);
 
-                        //Update Model with latest vals.
-                        var urlList = mongo.GetAllUrls();
-                        var currentUrlObj = mongo.GetAllCurrUrls().First();
-                        var CurrentUrl = urlList.First(i => i.Id == currentUrlObj.UrlIdentity);
 
+                        var ReturnUrl = urlList.Single(i => i.Id == newid);
                         /*** Send less data... ***/
-                        returnUrl = CurrentUrl.UrlPart;
+                        returnUrl = ReturnUrl.UrlPart;
 
                     }
                 }
                 catch (Exception ex)
                 {
-                    var urlList = mongo.GetAllUrls();
-                    var currentUrlObj = mongo.GetAllCurrUrls().First();
-                    var CurrentUrl = urlList.First(i => i.Id == currentUrlObj.UrlIdentity);
-
-                    /*** Send less data... ***/
-                    returnUrl = CurrentUrl.UrlPart;
+                    /*** Todos ***/
+                    returnUrl = "";
                 }
             }
             Clients.All.nextUrl(returnUrl);
@@ -105,6 +93,30 @@ namespace WebApplication1.Hubs
             {
                 Clients.Caller.goToTime(currUrl.time, currUrl.version);
             }
+        }
+
+        public void GoToUrl(string url)
+        {
+            var currUrl = mongo.GetAllCurrUrls().First();
+            var toId = mongo.GetAllUrls().Single(e => e.UrlPart == url);
+            mongo.updateCurrUrl(currUrl.Id, toId.Id);
+
+            Clients.All.goToUrl(url);
+        }
+
+        public void ShuffleUrl()
+        {
+            var currUrl = mongo.GetAllCurrUrls().First();
+            var urlList = mongo.GetAllUrls().ToList();
+            var r = rnd.Next(urlList.Count);
+            mongo.updateCurrUrl(currUrl.Id, urlList[r].Id);
+            Clients.All.goToUrl(urlList[r].UrlPart);
+        }
+
+        public void DeleteUrl(string url)
+        {
+            mongo.DeleteUrl(url);
+            ShuffleUrl();//TODOS..
         }
     }
 }

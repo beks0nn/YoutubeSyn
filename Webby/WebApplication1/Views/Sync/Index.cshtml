@@ -11,10 +11,22 @@
                         <ul class="list-group" id="urlListUL">
                             @foreach (var item in Model.UrlList)
                             {
-                                <li class="list-group-item">@item.UrlPart</li>
+                                if (item.UrlPart != Model.UrlCurrent)
+                                {
+                                    <li id="@item.UrlPart" class="list-group-item urlli">
+                                        @item.UrlPart
+                                        <div class="glyphicon glyphicon-remove urldiv hidden" id="deleteUrl" />
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li id="@item.UrlPart" class="list-group-item urlli active">
+                                        @item.UrlPart
+                                        <div class="glyphicon glyphicon-remove urldiv" id="deleteUrl" />
+                                    </li>
+                                }
                             }
                         </ul>
-
                     </div>
                 </div>
             </div>
@@ -25,6 +37,7 @@
                 <input class="form-control"  type="text" id="url" />
                 <input class="btn btn-default" type="button" id="addurl" value="Add url" />
                 <input class="btn btn-default" type="button" id="nexturl" value="Next url"/>
+                <input class="btn btn-default" type="button" id="shuffleurl" value="Shuffle" />
             </div>
         </div>
 
@@ -48,39 +61,62 @@
             // CLIENT SIDE FUNCTIONS (USED BY HUB)
             syncer.client.addUrl = function (url) {
                 // Add the url to list.
-                $('#urlListUL').append('<li class="list-group-item">' + htmlEncode(url) + '</li>');
+                $('#urlListUL').append('<li id="' + url + '" class="list-group-item">' + htmlEncode(url) + '</li>');
             };
 
             syncer.client.nextUrl = function (returnUrl) {
+                CurrentUrl = returnUrl;
+                var self = $("#" + CurrentUrl);
+                self.siblings().removeClass('active');
+                self.addClass('active');
                 player.stopVideo();
-                player.loadVideoById(returnUrl);
+                player.loadVideoById(CurrentUrl);
             };
 
             syncer.client.goToTime = function (time, version) {
-                console.log("GO TO TIME" + version);
                 GlobalRowV = version;
                 player.seekTo(time);
             };
 
+            syncer.client.goToUrl = function (returnUrl) {
+                CurrentUrl = returnUrl;
+                player.stopVideo();
+                player.loadVideoById(CurrentUrl);
+            };
+
             // Start the connection.
             $.connection.hub.start().done(function () {
-                //Bindklick events after the Websocket is open.
+                //Bindklick events after the Websocket is open. to ensure response.
                 $('#addurl').click(function () {
                     syncer.server.addUrl($('#url').val());
+                    //** Empty inputfield. **//
                     $('#url').val('');
                 });
 
                 $('#nexturl').click(function () {
                     syncer.server.nextUrl();
                 });
+
+                $('#shuffleurl').click(function () {
+                    syncer.server.shuffleUrl();
+                });
+                
+                $('#urlListUL').on('click', 'div', function () {
+                    syncer.server.deleteUrl(CurrentUrl);
+                });
+
+                $('#urlListUL').on('click', 'li', function () {
+                    var self = $(this);
+                    if (CurrentUrl !== self.attr("id")){
+                        self.siblings().removeClass('active');
+                        self.addClass('active');
+                        self.siblings().find('div').addClass('hidden');
+                        self.find("div").removeClass('hidden');
+                        syncer.server.goToUrl(self.attr("id"));
+                    }
+                });
             });
         });
-
-        /** Helper Functions **/
-        function htmlEncode(value) {
-            var encodedValue = $('<div />').text(value).html();
-            return encodedValue;
-        }
 
         /**** YOUTUBE FUNCTIONS ****/
         function onYouTubeIframeAPIReady() {
@@ -114,5 +150,11 @@
         tag.src = "https://www.youtube.com/iframe_api";
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        /** Helper Functions **/
+        function htmlEncode(value) {
+            var encodedValue = $('<div />').text(value).html();
+            return encodedValue;
+        }
 </script>
 }

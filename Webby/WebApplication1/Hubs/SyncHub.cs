@@ -13,17 +13,19 @@ namespace WebApplication1.Hubs
         private static Random RND = new Random();
         private bool disposed = false;
 
-        public void AddUrl(string url)
+        public void AddUrl(string url, string title)
         {
             try
             {
-                url = ExtractYoutubeId(url);
                 var urlToAdd = new Url();
+                var srubTitle = System.Net.WebUtility.HtmlEncode(title);
+                url = SanityScrub(url);
                 urlToAdd.UrlPart = url;
+                urlToAdd.Title = srubTitle;
                 mongo.CreateUrl(urlToAdd);
-                Clients.All.addUrl(url);
+                Clients.All.addUrl(url, srubTitle);
             }
-            catch (UrlFormatException ex)
+            catch (UrlFormatException)
             {
                 Clients.Caller.addUrlEx();
             }
@@ -137,39 +139,18 @@ namespace WebApplication1.Hubs
         }
 
         #region Helpers 
-        /// <summary>
-        /// Try to extract youtube ID from URl or normal ID input & Basic Sanity check
-        /// Encode to Html String to protect from scripts etc.( good enough).
-        /// </summary>
-        private static Regex YOUTUBEREGEX = new Regex(@"(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&amp;]v=)|youtu\.be\/)([^""&amp;?\/ ]{11})");
         private static Regex YOUTUBESANITY = new Regex(@"[a-zA-Z0-9_-]{11}");
-        public string ExtractYoutubeId(string url)
+        public string SanityScrub(string url)
         {
             var retUrl = System.Net.WebUtility.HtmlEncode(url);
-
-            if (url.Length > 11)
+            if (YOUTUBESANITY.Match(retUrl).Success)
             {
-                retUrl = YOUTUBEREGEX.Match(url).Groups[1].Value;
-                if (YOUTUBESANITY.Match(retUrl).Success)
-                {
-                    return retUrl;
-                }
-                else
-                {
-                    throw new UrlFormatException();
-                }
+                return retUrl;
             }
             else
             {
-                if (YOUTUBESANITY.Match(retUrl).Success)
-                {
-                    return retUrl;
-                }
-                else
-                {
-                    throw new UrlFormatException();
-                }
-            }      
+                throw new UrlFormatException();
+            }
         }
         #endregion
 

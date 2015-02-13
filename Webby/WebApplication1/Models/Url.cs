@@ -16,5 +16,8 @@ namespace WebApplication1.Models
 
         [BsonElement("Url")]
         public string UrlPart { get; set; }
+
+        [BsonElement("Title")]
+        public string Title { get; set; }
     }
 }

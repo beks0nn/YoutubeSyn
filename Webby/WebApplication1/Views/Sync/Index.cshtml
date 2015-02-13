@@ -14,14 +14,14 @@
                                 if (item.UrlPart != Model.UrlCurrent)
                                 {
                                     <li id="@item.UrlPart" class="list-group-item urlli">
-                                        @item.UrlPart
+                                        @item.Title
                                         <div class="glyphicon glyphicon-remove urldiv hidden" id="deleteUrl" />
                                     </li>
                                 }
                                 else
                                 {
                                     <li id="@item.UrlPart" class="list-group-item urlli active">
-                                        @item.UrlPart
+                                        @item.Title
                                         <div class="glyphicon glyphicon-remove urldiv" id="deleteUrl" />
                                     </li>
                                 }
@@ -63,8 +63,8 @@
 
         $(function () {
             // CLIENT SIDE FUNCTIONS (USED BY HUB)
-            syncer.client.addUrl = function (url) {
-                $('#urlListUL').append('<li id="' + url + '"class="list-group-item urlli">' + htmlEncode(url) + '<div class="glyphicon glyphicon-remove urldiv hidden" id="deleteUrl" /></li>');
+            syncer.client.addUrl = function (url,title) {
+                $('#urlListUL').append('<li id="' + url + '"class="list-group-item urlli">' + title + '<div class="glyphicon glyphicon-remove urldiv hidden" id="deleteUrl" /></li>');
             };
 
             syncer.client.addUrlEx = function () {
@@ -108,9 +108,17 @@
             $.connection.hub.start().done(function () {
                 //Bindklick events after the Websocket is open. to ensure response.
                 $('#addurl').click(function () {
-                    if ($('#url').val().length !== 0) {
-                        syncer.server.addUrl($('#url').val());
-                        $('#url').val('');
+                    var inputUrl = $('#url').val();
+                    if (inputUrl.length > 11) {
+                        var video_id = inputUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&amp;]v=)|youtu\.be\/)([^""&amp;?\/ ]{11})/);
+                        callJewApi(video_id);
+                    }
+                    else if (inputUrl.length === 11) {
+                        var video_id = inputUrl.match(/([a-zA-Z0-9_-]{11})/);
+                        callJewApi(video_id);
+                    }
+                    else {
+                        $('#url').val('BAD FORMAT');
                     }
                 });
 
@@ -158,7 +166,6 @@
                 syncer.server.nextUrl();
             }
             if (event.data == YT.PlayerState.PLAYING) {
-                //player.getVideoData().title;
                 syncer.server.goToTime(player.getCurrentTime(), GlobalRowV);
             }
         }
@@ -181,6 +188,22 @@
             self.addClass('active');
             self.siblings().find('div').addClass('hidden');
             self.find("div").removeClass('hidden');
+        }
+        //** Take regex match and run it towards youtubeAPi to extract title and validate id  **//
+        function callJewApi(video_id) {
+            if (video_id != null) {
+                video_id = video_id[1];
+                $.getJSON('http://gdata.youtube.com/feeds/api/videos/' + video_id + '?v=2&alt=jsonc', function () {
+                }).success(function (data, status, xhr) {
+                    syncer.server.addUrl(data.data.id, data.data.title);
+                    $('#url').val('');
+                })
+                .error(function () {
+                    $('#url').val('BAD FORMAT');
+                });
+            } else {
+                $('#url').val('BAD FORMAT');
+            }
         }
 </script>
 }

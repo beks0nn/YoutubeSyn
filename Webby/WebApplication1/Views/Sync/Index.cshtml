@@ -67,6 +67,10 @@
                 $('#urlListUL').append('<li id="' + url + '"class="list-group-item urlli">' + htmlEncode(url) + '<div class="glyphicon glyphicon-remove urldiv hidden" id="deleteUrl" /></li>');
             };
 
+            syncer.client.addUrlEx = function () {
+                $('#url').val('BAD FORMAT');
+            };
+
             syncer.client.nextUrl = function (returnUrl) {
                 CurrentUrl = returnUrl;
                 syncUrlList(CurrentUrl);
@@ -154,6 +158,7 @@
                 syncer.server.nextUrl();
             }
             if (event.data == YT.PlayerState.PLAYING) {
+                //player.getVideoData().title;
                 syncer.server.goToTime(player.getCurrentTime(), GlobalRowV);
             }
         }

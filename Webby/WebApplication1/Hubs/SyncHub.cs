@@ -2,22 +2,37 @@
 using System.Linq;
 using Microsoft.AspNet.SignalR;
 using WebApplication1.MongoDBLayer;
+using System.Text.RegularExpressions;
 using WebApplication1.Models;
 
 namespace WebApplication1.Hubs
 {
     public class SyncHub : Hub
     {
-        private static Random rnd = new Random();
         private MongoData mongo = new MongoData();
+        private static Random RND = new Random();
         private bool disposed = false;
 
-        public void AddUrl(string url)
+        public void AddUrl(string url, string title)
         {
-            var urlToAdd = new Url();
-            urlToAdd.UrlPart = url;
-            mongo.CreateUrl(urlToAdd);
-            Clients.All.addUrl(url);
+            try
+            {
+                var urlToAdd = new Url();
+                var srubTitle = System.Net.WebUtility.HtmlEncode(title);
+                url = SanityScrub(url);
+                urlToAdd.UrlPart = url;
+                urlToAdd.Title = srubTitle;
+                mongo.CreateUrl(urlToAdd);
+                Clients.All.addUrl(url, srubTitle);
+            }
+            catch (UrlFormatException)
+            {
+                Clients.Caller.addUrlEx();
+            }
+            catch (Exception)
+            {
+                Clients.Caller.addUrlEx(); // TODOS not expected.
+            }
         }
 
         public void NextUrl()
@@ -95,7 +110,7 @@ namespace WebApplication1.Hubs
         public void GoToUrl(string url)
         {
             var currUrl = mongo.GetAllCurrUrls().First();
-            var toId = mongo.GetAllUrls().Single(e => e.UrlPart == url);
+            var toId = mongo.GetAllUrls().First(e => e.UrlPart == url);
             mongo.updateCurrUrl(currUrl.Id, toId.Id);
 
             Clients.All.goToUrl(url);
@@ -105,7 +120,7 @@ namespace WebApplication1.Hubs
         {
             var currUrl = mongo.GetAllCurrUrls().First();
             var urlList = mongo.GetAllUrls().ToList();
-            var r = rnd.Next(urlList.Count);
+            var r = RND.Next(urlList.Count);
             mongo.updateCurrUrl(currUrl.Id, urlList[r].Id);
             Clients.All.goToUrl(urlList[r].UrlPart);
         }
@@ -116,12 +131,28 @@ namespace WebApplication1.Hubs
             /*SHUFFLE CODE*/
             var currUrl = mongo.GetAllCurrUrls().First();
             var urlList = mongo.GetAllUrls().ToList();
-            var r = rnd.Next(urlList.Count);
+            var r = RND.Next(urlList.Count);
             mongo.updateCurrUrl(currUrl.Id, urlList[r].Id);
             /**/
             Clients.All.afterDelete(urlList[r].UrlPart, url);
 
         }
+
+        #region Helpers 
+        private static Regex YOUTUBESANITY = new Regex(@"[a-zA-Z0-9_-]{11}");
+        public string SanityScrub(string url)
+        {
+            var retUrl = System.Net.WebUtility.HtmlEncode(url);
+            if (YOUTUBESANITY.Match(retUrl).Success)
+            {
+                return retUrl;
+            }
+            else
+            {
+                throw new UrlFormatException();
+            }
+        }
+        #endregion
 
         # region IDisposable
 

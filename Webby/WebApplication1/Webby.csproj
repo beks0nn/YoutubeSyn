@@ -199,6 +199,7 @@
     <Content Include="img\post-sample-image.jpg" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <None Include="Properties\PublishProfiles\YouSync.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\clean-blog.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />

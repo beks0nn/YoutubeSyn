@@ -419,7 +419,7 @@ body {
 
 .urldiv{
     display: inline-block;
-    float: right !important
+    float: right !important;
 }
 
 .urldiv:active {
@@ -446,4 +446,8 @@ body {
 }
 .mainbtn{
     height:3.5em;
+}
+.fuzzyinput{
+    height:3.5em;
+    width:100% !important;
 }

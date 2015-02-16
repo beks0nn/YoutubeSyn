@@ -8,7 +8,8 @@ namespace WebApplication1
         public static void RegisterBundles(BundleCollection bundles)
         {
             bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
-                        "~/Scripts/jquery-{version}.js"//,
+                        "~/Scripts/jquery-{version}.js",
+                        "~/Scripts/jquery.scrollTo.min.js"
                        // "~/Scripts/jquery.unobtrusive-ajax.js"
                         
                         ));
@@ -22,7 +23,7 @@ namespace WebApplication1
 
             bundles.Add(new ScriptBundle("~/bundles/js").Include(
                       "~/Scripts/bootstrap.js",
-                      "~/Scripts/respond.js"//,
+                      "~/Scripts/respond.js"
                       //"~/Scripts/clean-blog.js"
                       ));
 

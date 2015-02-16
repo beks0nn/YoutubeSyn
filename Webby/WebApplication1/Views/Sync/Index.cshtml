@@ -43,8 +43,10 @@
                     <input class="btn btn-default mainbtn" type="button" id="shuffleurl" value="Shuffle" />
                 </div>
             </div>
+            <div class="col-md-4">
+                <input class="form-control fuzzyinput" type="text" id="fuzzySearch" />
+            </div>
         </div>
-
         <div class="row">
         </div>
     </div>
@@ -59,7 +61,6 @@
 
         var player;//The Youtube player 
         var syncer = $.connection.syncHub;//The WebSocket.
-       
 
         $(function () {
             // CLIENT SIDE FUNCTIONS (USED BY HUB)
@@ -77,6 +78,7 @@
 
                 player.stopVideo();
                 player.loadVideoById(CurrentUrl);
+                scrollToUrl(CurrentUrl);
             };
 
             syncer.client.goToTime = function (time, version) {
@@ -89,6 +91,7 @@
                 syncUrlList(CurrentUrl);
                 player.stopVideo();
                 player.loadVideoById(CurrentUrl);
+                scrollToUrl(CurrentUrl);
             };
 
             syncer.client.afterDelete = function (returnUrl, deleteThis) {
@@ -102,6 +105,7 @@
 
                 player.stopVideo();
                 player.loadVideoById(CurrentUrl);
+                scrollToUrl(CurrentUrl);
             }
 
             // Start the connection.
@@ -159,6 +163,7 @@
         function onPlayerReady(event) {
             event.target.playVideo();
             player.seekTo(CurrentTime);
+            scrollToUrl(CurrentUrl);
         }
 
         function onPlayerStateChange(event) {
@@ -188,6 +193,10 @@
             self.addClass('active');
             self.siblings().find('div').addClass('hidden');
             self.find("div").removeClass('hidden');
+        }
+
+        function scrollToUrl(url) {
+            $('div.scrollList').scrollTo($('div li:eq(' + $('#' + url).index() + ')'), 800);
         }
         //** Take regex match and run it towards youtubeAPi to extract title and validate id  **//
         function callJewApi(video_id) {

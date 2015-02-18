@@ -9,7 +9,7 @@
                 <div id="divUrlList">
                     <div class="row scrollList" id="searchResults">
                         <ul class="list-group" id="urlListUL">
-                            @foreach (var item in Model.UrlList)
+                            @foreach (var item in Json.Decode(Model.jSonList))
                             {
                                 if (item.UrlPart != Model.UrlCurrent)
                                 {
@@ -68,7 +68,8 @@
 
         $(function () {
             // CLIENT SIDE FUNCTIONS (USED BY HUB)
-            syncer.client.addUrl = function (url,title) {
+            syncer.client.addUrl = function (url, title) {
+
                 $('#urlListUL').append('<li id="' + url + '"class="list-group-item urlli">' + title + '<div class="glyphicon glyphicon-remove urldiv hidden" id="deleteUrl" /></li>');
             };
 
@@ -87,7 +88,8 @@
 
             syncer.client.goToTime = function (time, version) {
                 GlobalRowV = version;
-                player.seekTo(time);
+                CurrentTime = time;
+                player.seekTo(parseFloat(CurrentTime));
             };
 
             syncer.client.goToUrl = function (returnUrl) {
@@ -153,12 +155,8 @@
                     var f = new Fuse(JsonUrlList, options);
                     var show = f.search($("#fuzzysearch").val());
                     if (show.length > 0) {
-                        console.log(f.search($("#fuzzysearch").val()));
                         $('#urlListUL >li').each(function () {
-
-                            var a = $.inArray($(this).attr("id"), show);
-
-                            if ($.inArray($(this).attr("id"), show) === -1) { // -1  === not in array
+                            if ($.inArray($(this).attr("id"), show) === -1) {// -1  === not in array
                                 $(this).addClass("hidden");
                             } else {
                                 $(this).removeClass("hidden");
@@ -187,7 +185,7 @@
 
         function onPlayerReady(event) {
             event.target.playVideo();
-            player.seekTo(CurrentTime);
+            player.seekTo(parseFloat(CurrentTime));
             scrollToUrl(CurrentUrl);
         }
 

@@ -27,7 +27,6 @@ namespace WebApplication1.Controllers
             var CurrentUrl = urlList.First(i => i.Id == currentUrlObj.UrlIdentity);
 
             retModel.CurrentTime = currentUrlObj.time;
-            retModel.UrlList = urlList;
             retModel.UrlCurrent = CurrentUrl.UrlPart;
             retModel.RowVersion = currentUrlObj.version.ToString();
             retModel.jSonList = JsonConvert.SerializeObject(urlList);

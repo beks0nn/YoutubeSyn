@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Linq;
 using System.Web.Mvc;
 using WebApplication1.Models;
@@ -29,6 +30,7 @@ namespace WebApplication1.Controllers
             retModel.UrlList = urlList;
             retModel.UrlCurrent = CurrentUrl.UrlPart;
             retModel.RowVersion = currentUrlObj.version.ToString();
+            retModel.jSonList = JsonConvert.SerializeObject(urlList);
 
             return retModel;
         }

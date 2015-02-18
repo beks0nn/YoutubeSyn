@@ -13,7 +13,7 @@
                             {
                                 if (item.UrlPart != Model.UrlCurrent)
                                 {
-                                    <li id="@item.UrlPart" class="list-group-item urlli">
+                                    <li id="@item.UrlPart" class="list-group-item urlli"  >
                                         @item.Title
                                         <div class="glyphicon glyphicon-remove urldiv hidden" id="deleteUrl" />
                                     </li>
@@ -43,6 +43,9 @@
                     <input class="btn btn-default mainbtn" type="button" id="shuffleurl" value="Shuffle" />
                 </div>
             </div>
+            <div class="col-md-4">
+                <input class="form-control fuzzyinput" type="text" id="fuzzysearch" />
+            </div>
         </div>
         <div class="row">
         </div>
@@ -55,9 +58,13 @@
         var GlobalRowV = "@Model.RowVersion";
         var CurrentUrl = "@Model.UrlCurrent";
         var CurrentTime = "@Model.CurrentTime";
-
+        var JsonUrlList = $.parseJSON(@Html.Raw(Json.Encode(Model.jSonList)));
         var player;//The Youtube player 
         var syncer = $.connection.syncHub;//The WebSocket.
+        var options = {
+            keys: ['Title'],   // keys to search in
+            id: 'UrlPart'     // return a list of identifiers only
+        }
 
         $(function () {
             // CLIENT SIDE FUNCTIONS (USED BY HUB)
@@ -139,6 +146,27 @@
                     var self = $(this);
                     if (CurrentUrl !== self.attr("id")){
                         syncer.server.goToUrl(self.attr("id"));
+                    }
+                });
+
+                $("#fuzzysearch").keyup(function () {
+                    var f = new Fuse(JsonUrlList, options);
+                    var show = f.search($("#fuzzysearch").val());
+                    if (show.length > 0) {
+                        console.log(f.search($("#fuzzysearch").val()));
+                        $('#urlListUL >li').each(function () {
+
+                            var a = $.inArray($(this).attr("id"), show);
+
+                            if ($.inArray($(this).attr("id"), show) === -1) { // -1  === not in array
+                                $(this).addClass("hidden");
+                            } else {
+                                $(this).removeClass("hidden");
+                            }
+                        });
+                    }
+                    else {
+                        $('#urlListUL >li').removeClass('hidden');
                     }
                 });
             });

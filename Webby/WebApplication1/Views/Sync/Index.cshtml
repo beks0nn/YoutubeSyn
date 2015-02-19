@@ -155,6 +155,9 @@
                     }
                 });
 
+                $("#fuzzysearch").on('click', function () {
+                    scrollToUrl($('#urlListUL li').first().attr('id'));
+                });
                 $("#fuzzysearch").keyup(function () {
                     var i, len, title, urls, query, relevance, ra, rb, elems, obj, results;
                     query = $("#fuzzysearch").val();
@@ -165,7 +168,6 @@
                         title = urls[i].Title;
                         relevance = string_similarity(query, title);
                         //populate relevace in .relevance div on ID
-
                         $("#" + urls[i].UrlPart + "> .relevance").attr('id', relevance.toFixed(2));
                     }
 
@@ -179,7 +181,6 @@
                     });
                     elems = elems.get().reverse();
                     $('#urlListUL').html(elems);
-                    scrollToUrl(elems[0].id);
                 });
             });
         });

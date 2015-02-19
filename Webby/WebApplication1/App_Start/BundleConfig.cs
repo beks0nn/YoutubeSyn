@@ -36,7 +36,7 @@ namespace WebApplication1
                       ));
 
             //!!Comment out if you don't want minification!!.
-            //BundleTable.EnableOptimizations = true;
+            BundleTable.EnableOptimizations = true;
         }
     }
 }

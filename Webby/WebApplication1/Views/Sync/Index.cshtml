@@ -155,9 +155,6 @@
                     }
                 });
 
-                $("#fuzzysearch").on('click', function () {
-                    scrollToUrl($('#urlListUL li').first().attr('id'));
-                });
                 $("#fuzzysearch").keyup(function () {
                     var i, len, title, urls, query, relevance, ra, rb, elems, obj, results;
                     query = $("#fuzzysearch").val();
@@ -181,6 +178,7 @@
                     });
                     elems = elems.get().reverse();
                     $('#urlListUL').html(elems);
+                    scrollToUrl(elems[0].id);
                 });
             });
         });
@@ -234,7 +232,7 @@
         }
 
         function scrollToUrl(url) {
-            $('div.scrollList').scrollTo($('div li:eq(' + $('#' + url).index() + ')'), 800);
+            $('div.scrollList').scrollTo($('div li:eq(' + $('#' + url).index() + ')'), 0);
         }
         //** Take regex match and run it towards youtubeAPi to extract title and validate id  **//
         function callJewApi(video_id) {

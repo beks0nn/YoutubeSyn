@@ -63,6 +63,8 @@
         var CurrentUrl = "@Model.UrlCurrent";
         var CurrentTime = "@Model.CurrentTime";
         var JsonUrlList = $.parseJSON(@Html.Raw(Json.Encode(Model.jSonList)));
+        var GlobalResults;
+        var testElems;
 
         var player;//The Youtube player 
         var syncer = $.connection.syncHub;//The WebSocket.
@@ -144,7 +146,7 @@
                     syncer.server.shuffleUrl();
                 });
                 
-                $('#urlListUL').on('click', 'div', function () {
+                $('#urlListUL').on('click', '#deleteUrl', function () {
                     syncer.server.deleteUrl(CurrentUrl);
                 });
 
@@ -156,26 +158,30 @@
                 });
 
                 $("#fuzzysearch").keyup(function () {
-                    var i, len, title, urls, query, relevance, ra, rb, elems;
+                    var i, len, title, urls, query, relevance, ra, rb, elems, obj, results;
                     query = $("#fuzzysearch").val();
                     urls = JsonUrlList;
+                    results = [];
                     
                     for (i = 0, len = urls.length; i < len; i++) {
                         title = urls[i].Title;
                         relevance = string_similarity(query, title);
                         //populate relevace in .relevance div on ID
-                        $("#" + urls[i].UrlPart + "> .relevance").attr('id', relevance);
+
+                        $("#" + urls[i].UrlPart + "> .relevance").attr('id', relevance.toFixed(2));
                     }
 
-                    elems = $('#urlListUL').children('li');
 
+                    elems = $('#urlListUL').children('li');
+                    //function cmp(a, b) { return a == b ? 0 : a < b ? -1 : 1; }
                     elems.sort(function (a, b) {
                         ra = $("#urlListUL >#" + a.id + "> .relevance").attr("id");
                         rb = $("#urlListUL >#" + b.id + "> .relevance").attr("id");
-                        return parseFloat(ra) < parseFloat(rb);
+                        return ra - rb;//cmp(parseFloat(ra), parseFloat(rb));
                     });
+                    elems = elems.get().reverse();
                     $('#urlListUL').html(elems);
-                    scrollToUrl(elems.first().attr('id'));
+                    scrollToUrl(elems[0].id);
                 });
             });
         });

@@ -14,15 +14,19 @@
                                 if (item.UrlPart != Model.UrlCurrent)
                                 {
                                     <li id="@item.UrlPart" class="list-group-item urlli"  >
-                                        @item.Title
-                                        <div class="glyphicon glyphicon-remove urldiv hidden" id="deleteUrl" />
+                                        <div class="relevance">
+                                            @item.Title
+                                            <div class="glyphicon glyphicon-remove urldiv hidden" id="deleteUrl" />
+                                        </div>
                                     </li>
                                 }
                                 else
                                 {
                                     <li id="@item.UrlPart" class="list-group-item urlli active">
-                                        @item.Title
-                                        <div class="glyphicon glyphicon-remove urldiv" id="deleteUrl" />
+                                        <div class="relevance">
+                                            @item.Title
+                                            <div class="glyphicon glyphicon-remove urldiv" id="deleteUrl" />
+                                        </div>
                                     </li>
                                 }
                             }
@@ -59,6 +63,7 @@
         var CurrentUrl = "@Model.UrlCurrent";
         var CurrentTime = "@Model.CurrentTime";
         var JsonUrlList = $.parseJSON(@Html.Raw(Json.Encode(Model.jSonList)));
+
         var player;//The Youtube player 
         var syncer = $.connection.syncHub;//The WebSocket.
         var options = {
@@ -69,8 +74,7 @@
         $(function () {
             // CLIENT SIDE FUNCTIONS (USED BY HUB)
             syncer.client.addUrl = function (url, title) {
-
-                $('#urlListUL').append('<li id="' + url + '"class="list-group-item urlli">' + title + '<div class="glyphicon glyphicon-remove urldiv hidden" id="deleteUrl" /></li>');
+                $('#urlListUL').append('<li id="' + url + '"class="list-group-item urlli"><div class="relevance">' + title + '<div class="glyphicon glyphicon-remove urldiv hidden" id="deleteUrl" /></div></li>');
             };
 
             syncer.client.addUrlEx = function () {
@@ -106,8 +110,8 @@
                 var self = $("#" + CurrentUrl);
                 self.siblings().removeClass('active');
                 self.addClass('active');
-                self.siblings().find('div').addClass('hidden');
-                self.find("div").removeClass('hidden');
+                self.siblings().find('#deleteUrl').addClass('hidden');
+                self.find("#deleteUrl").removeClass('hidden');
 
                 player.stopVideo();
                 player.loadVideoById(CurrentUrl);
@@ -152,20 +156,26 @@
                 });
 
                 $("#fuzzysearch").keyup(function () {
-                    var f = new Fuse(JsonUrlList, options);
-                    var show = f.search($("#fuzzysearch").val());
-                    if (show.length > 0) {
-                        $('#urlListUL >li').each(function () {
-                            if ($.inArray($(this).attr("id"), show) === -1) {// -1  === not in array
-                                $(this).addClass("hidden");
-                            } else {
-                                $(this).removeClass("hidden");
-                            }
-                        });
+                    var i, len, title, urls, query, relevance, ra, rb, elems;
+                    query = $("#fuzzysearch").val();
+                    urls = JsonUrlList;
+                    
+                    for (i = 0, len = urls.length; i < len; i++) {
+                        title = urls[i].Title;
+                        relevance = string_similarity(query, title);
+                        //populate relevace in .relevance div on ID
+                        $("#" + urls[i].UrlPart + "> .relevance").attr('id', relevance);
                     }
-                    else {
-                        $('#urlListUL >li').removeClass('hidden');
-                    }
+
+                    elems = $('#urlListUL').children('li');
+
+                    elems.sort(function (a, b) {
+                        ra = $("#urlListUL >#" + a.id + "> .relevance").attr("id");
+                        rb = $("#urlListUL >#" + b.id + "> .relevance").attr("id");
+                        return parseFloat(ra) < parseFloat(rb);
+                    });
+                    $('#urlListUL').html(elems);
+                    scrollToUrl(elems.first().attr('id'));
                 });
             });
         });
@@ -214,8 +224,8 @@
             var self = $("#" + url);
             self.siblings().removeClass('active');
             self.addClass('active');
-            self.siblings().find('div').addClass('hidden');
-            self.find("div").removeClass('hidden');
+            self.siblings().find('#deleteUrl').addClass('hidden');
+            self.find("#deleteUrl").removeClass('hidden');
         }
 
         function scrollToUrl(url) {
@@ -237,5 +247,41 @@
                 $('#url').val('BAD FORMAT');
             }
         }
+
+        ///////////////// SORTING LAND
+        var get_bigrams, string_similarity;
+
+        get_bigrams = function (string) {
+            var i, j, ref, s, v;
+            s = string.toLowerCase();
+            v = new Array(s.length - 1);
+            for (i = j = 0, ref = v.length; j <= ref; i = j += 1) {
+                v[i] = s.slice(i, i + 2);
+            }
+            return v;
+        };
+
+        string_similarity = function (str1, str2) {
+            var hit_count, j, k, len, len1, pairs1, pairs2, union, x, y;
+            if (str1.length > 0 && str2.length > 0) {
+                pairs1 = get_bigrams(str1);
+                pairs2 = get_bigrams(str2);
+                union = pairs1.length + pairs2.length;
+                hit_count = 0;
+                for (j = 0, len = pairs1.length; j < len; j++) {
+                    x = pairs1[j];
+                    for (k = 0, len1 = pairs2.length; k < len1; k++) {
+                        y = pairs2[k];
+                        if (x === y) {
+                            hit_count++;
+                        }
+                    }
+                }
+                if (hit_count > 0) {
+                    return (2.0 * hit_count) / union;
+                }
+            }
+            return 0.0;
+        };
 </script>
 }

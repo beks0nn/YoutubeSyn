@@ -13,20 +13,16 @@
                             {
                                 if (item.UrlPart != Model.UrlCurrent)
                                 {
-                                    <li id="@item.UrlPart" class="list-group-item urlli"  >
-                                        <div class="relevance">
-                                            @item.Title
-                                            <div class="glyphicon glyphicon-remove urldiv hidden" id="deleteUrl" />
-                                        </div>
+                                    <li id="@item.UrlPart" class="list-group-item urlli"  data-relevance="0">
+                                        @item.Title
+                                        <div class="glyphicon glyphicon-remove urldiv hidden" id="deleteUrl" />
                                     </li>
                                 }
                                 else
                                 {
-                                    <li id="@item.UrlPart" class="list-group-item urlli active">
-                                        <div class="relevance">
-                                            @item.Title
-                                            <div class="glyphicon glyphicon-remove urldiv" id="deleteUrl" />
-                                        </div>
+                                    <li id="@item.UrlPart" class="list-group-item urlli active" data-relevance="0">
+                                        @item.Title
+                                        <div class="glyphicon glyphicon-remove urldiv" id="deleteUrl" />
                                     </li>
                                 }
                             }
@@ -74,7 +70,7 @@
         $(function () {
             // CLIENT SIDE FUNCTIONS (USED BY HUB)
             syncer.client.addUrl = function (url, title) {
-                $('#urlListUL').append('<li id="' + url + '"class="list-group-item urlli"><div class="relevance">' + title + '<div class="glyphicon glyphicon-remove urldiv hidden" id="deleteUrl" /></div></li>');
+                $('#urlListUL').append('<li id="' + url + '"class="list-group-item urlli" data-relevance="0">' + title + '<div class="glyphicon glyphicon-remove urldiv hidden" id="deleteUrl" /></li>');
             };
 
             syncer.client.addUrlEx = function () {
@@ -159,24 +155,29 @@
                     var i, len, title, urls, query, relevance, ra, rb, elems, obj, results;
                     query = $("#fuzzysearch").val();
                     urls = JsonUrlList;
-                    results = [];
                     
+                    //Array of li :s  remove dom objects Weight and sort and then insert into dom.
+                    elems = $('#urlListUL').children('li').remove();
+
                     for (i = 0, len = urls.length; i < len; i++) {
                         title = urls[i].Title;
                         relevance = string_similarity(query, title);
-                        //populate relevace in .relevance div on ID
-                        $("#" + urls[i].UrlPart + "> .relevance").attr('id', relevance.toFixed(2));
+                        //Normalize relevance
+                        if (relevance < 0.1)
+                            relevance = 0
+
+                        elems.filter("#" + urls[i].UrlPart)[0].dataset.relevance = relevance.toFixed(2);
                     }
 
-
-                    elems = $('#urlListUL').children('li');
-                    //function cmp(a, b) { return a == b ? 0 : a < b ? -1 : 1; }
+                    function cmp(a, b) { return a == b ? 0 : a < b ? -1 : 1; }
                     elems.sort(function (a, b) {
-                        ra = $("#urlListUL >#" + a.id + "> .relevance").attr("id");
-                        rb = $("#urlListUL >#" + b.id + "> .relevance").attr("id");
-                        return ra - rb;//cmp(parseFloat(ra), parseFloat(rb));
+                        //var a = $('#mydiv').data('myval');
+                        ra = a.dataset.relevance;
+                        rb = b.dataset.relevance;
+
+                        return ra < rb;//cmp(parseFloat(ra), parseFloat(rb)); //ra - rb;
                     });
-                    elems = elems.get().reverse();
+                    
                     $('#urlListUL').html(elems);
                     scrollToUrlFaster(elems[0].id);
                 });

@@ -169,15 +169,15 @@
                         elems.filter("#" + urls[i].UrlPart)[0].dataset.relevance = relevance.toFixed(2);
                     }
 
-                    function cmp(a, b) { return a == b ? 0 : a < b ? -1 : 1; }
+                    function cmp(a, b) { return a == b ? 0 : a < b ? 1 : -1; }
                     elems.sort(function (a, b) {
                         //var a = $('#mydiv').data('myval');
                         ra = a.dataset.relevance;
                         rb = b.dataset.relevance;
 
-                        return ra < rb;//cmp(parseFloat(ra), parseFloat(rb)); //ra - rb;
+                        return cmp(parseFloat(ra), parseFloat(rb)); //ra - rb;
                     });
-                    
+                   
                     $('#urlListUL').html(elems);
                     scrollToUrlFaster(elems[0].id);
                 });

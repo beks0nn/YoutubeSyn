@@ -1,6 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Web;
 using System.Web.Mvc;
 using WebApplication1.Models;
 using WebApplication1.MongoDBLayer;
@@ -24,12 +27,13 @@ namespace WebApplication1.Controllers
             var retModel = new SyncViewModel();
             var urlList = mongo.GetAllUrls();
             var currentUrlObj = mongo.GetAllCurrUrls().First();
-            var CurrentUrl = urlList.First(i => i.Id == currentUrlObj.UrlIdentity);
+            var CurrentUrl = urlList.First(e => e.Id == currentUrlObj.UrlIdentity);
+            var retUrlList = urlList.Select(e => new SmallerUrl() { Title = WebUtility.HtmlDecode(e.Title), UrlPart = e.UrlPart });
 
             retModel.CurrentTime = currentUrlObj.time;
             retModel.UrlCurrent = CurrentUrl.UrlPart;
             retModel.RowVersion = currentUrlObj.version.ToString();
-            retModel.jSonList = JsonConvert.SerializeObject(urlList);
+            retModel.jSonList = JsonConvert.SerializeObject(retUrlList);
             return retModel;
         }
 

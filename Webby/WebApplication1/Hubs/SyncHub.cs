@@ -4,6 +4,7 @@ using Microsoft.AspNet.SignalR;
 using WebApplication1.MongoDBLayer;
 using System.Text.RegularExpressions;
 using WebApplication1.Models;
+using System.Net;
 
 namespace WebApplication1.Hubs
 {
@@ -18,12 +19,12 @@ namespace WebApplication1.Hubs
             try
             {
                 var urlToAdd = new Url();
-                var srubTitle = System.Net.WebUtility.HtmlEncode(title);
+                var scrubTitle = WebUtility.HtmlEncode(title);
                 url = SanityScrub(url);
                 urlToAdd.UrlPart = url;
-                urlToAdd.Title = srubTitle;
+                urlToAdd.Title = scrubTitle;
                 mongo.CreateUrl(urlToAdd);
-                Clients.All.addUrl(url, srubTitle);
+                Clients.All.addUrl(url, WebUtility.HtmlDecode(scrubTitle));
             }
             catch (UrlFormatException)
             {

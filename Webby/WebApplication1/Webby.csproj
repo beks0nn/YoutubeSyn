@@ -178,6 +178,7 @@
     </Compile>
     <Compile Include="Hubs\SyncHub.cs" />
     <Compile Include="Models\CurUrl.cs" />
+    <Compile Include="Models\SmallerUrl.cs" />
     <Compile Include="Models\SyncViewModel.cs" />
     <Compile Include="Models\Url.cs" />
     <Compile Include="Models\UrlFormatException.cs" />

@@ -52,243 +52,249 @@
     </div>
     <hr>
 </body>
+
+
 @section scripts {
     <script>
-        /** Init Vars from Model here ( Only from first page load).  **/
-        var GlobalRowV = "@Model.RowVersion";
-        var CurrentUrl = "@Model.UrlCurrent";
-        var CurrentTime = "@Model.CurrentTime";
-        var JsonUrlList = $.parseJSON(@Html.Raw(Json.Encode(Model.jSonList)));
+    /** Init Vars from Model here ( Only from first page load).  **/
+    var GlobalRowV = "@Model.RowVersion";
+    var CurrentUrl = "@Model.UrlCurrent";
+    var CurrentTime = "@Model.CurrentTime";
+    var JsonUrlList = $.parseJSON(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.jSonList))));
 
-        var player;//The Youtube player 
-        var syncer = $.connection.syncHub;//The WebSocket.
-        var options = {
-            keys: ['Title'],   // keys to search in
-            id: 'UrlPart'     // return a list of identifiers only
-        }
+    var player;//The Youtube player
+    var syncer = $.connection.syncHub;//The WebSocket.
+    var options = {
+        keys: ['Title'],   // keys to search in
+        id: 'UrlPart'     // return a list of identifiers only
+    }
 
-        $(function () {
-            // CLIENT SIDE FUNCTIONS (USED BY HUB)
-            syncer.client.addUrl = function (url, title) {
-                $('#urlListUL').append('<li id="' + url + '"class="list-group-item urlli" data-relevance="0">' + title + '<div class="glyphicon glyphicon-remove urldiv hidden" id="deleteUrl" /></li>');
-            };
-
-            syncer.client.addUrlEx = function () {
-                $('#url').val('BAD FORMAT');
-            };
-
-            syncer.client.nextUrl = function (returnUrl) {
-                CurrentUrl = returnUrl;
-                syncUrlList(CurrentUrl);
-
-                player.stopVideo();
-                player.loadVideoById(CurrentUrl);
-                scrollToUrl(CurrentUrl);
-            };
-
-            syncer.client.goToTime = function (time, version) {
-                GlobalRowV = version;
-                CurrentTime = time;
-                player.seekTo(parseFloat(CurrentTime));
-            };
-
-            syncer.client.goToUrl = function (returnUrl) {
-                CurrentUrl = returnUrl;
-                syncUrlList(CurrentUrl);
-                player.stopVideo();
-                player.loadVideoById(CurrentUrl);
-                scrollToUrl(CurrentUrl);
-            };
-
-            syncer.client.afterDelete = function (returnUrl, deleteThis) {
-                $('#' + deleteThis).remove();
-                CurrentUrl = returnUrl;
-                var self = $("#" + CurrentUrl);
-                self.siblings().removeClass('active');
-                self.addClass('active');
-                self.siblings().find('#deleteUrl').addClass('hidden');
-                self.find("#deleteUrl").removeClass('hidden');
-
-                player.stopVideo();
-                player.loadVideoById(CurrentUrl);
-                scrollToUrl(CurrentUrl);
-            }
-
-            // Start the connection.
-            $.connection.hub.start().done(function () {
-                //Bindklick events after the Websocket is open. to ensure response.
-                $('#addurl').click(function () {
-                    var inputUrl = $('#url').val();
-                    if (inputUrl.length > 11) {
-                        var video_id = inputUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&amp;]v=)|youtu\.be\/)([^""&amp;?\/ ]{11})/);
-                        callJewApi(video_id);
-                    }
-                    else if (inputUrl.length === 11) {
-                        var video_id = inputUrl.match(/([a-zA-Z0-9_-]{11})/);
-                        callJewApi(video_id);
-                    }
-                    else {
-                        $('#url').val('BAD FORMAT');
-                    }
-                });
-
-                $('#nexturl').click(function () {
-                    syncer.server.nextUrl();
-                });
-
-                $('#shuffleurl').click(function () {
-                    syncer.server.shuffleUrl();
-                });
-                
-                $('#urlListUL').on('click', '#deleteUrl', function () {
-                    syncer.server.deleteUrl(CurrentUrl);
-                });
-
-                $('#urlListUL').on('click', 'li', function () {
-                    var self = $(this);
-                    if (CurrentUrl !== self.attr("id")){
-                        syncer.server.goToUrl(self.attr("id"));
-                    }
-                });
-
-                $("#fuzzysearch").keyup(function () {
-                    var i, len, title, urls, query, relevance, ra, rb, elems, obj, results;
-                    query = $("#fuzzysearch").val();
-                    urls = JsonUrlList;
-                    
-                    //Array of li :s  remove dom objects Weight and sort and then insert into dom.
-                    elems = $('#urlListUL').children('li').remove();
-
-                    for (i = 0, len = urls.length; i < len; i++) {
-                        title = urls[i].Title;
-                        relevance = string_similarity(query, title);
-                        //Normalize relevance
-                        if (relevance < 0.1)
-                            relevance = 0
-
-                        elems.filter("#" + urls[i].UrlPart)[0].dataset.relevance = relevance.toFixed(2);
-                    }
-
-                    function cmp(a, b) { return a == b ? 0 : a < b ? 1 : -1; }
-                    elems.sort(function (a, b) {
-                        //var a = $('#mydiv').data('myval');
-                        ra = a.dataset.relevance;
-                        rb = b.dataset.relevance;
-
-                        return cmp(parseFloat(ra), parseFloat(rb)); //ra - rb;
-                    });
-                   
-                    $('#urlListUL').html(elems);
-                    scrollToUrlFaster(elems[0].id);
-                });
+    $(function () {
+        // CLIENT SIDE FUNCTIONS (USED BY HUB)
+        syncer.client.addUrl = function (url, title) {
+            $('#urlListUL').append('<li id="' + url + '"class="list-group-item urlli" data-relevance="0">' + title + '<div class="glyphicon glyphicon-remove urldiv hidden" id="deleteUrl" /></li>');
+            JsonUrlList.push({
+                UrlPart: url,
+                Title: title
             });
-        });
+        };
 
-        /**** YOUTUBE FUNCTIONS ****/
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('player', {
-                height: '400',
-                width: '640',
-                videoId: CurrentUrl,
-                events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange
-                }
-            });
-        }
+        syncer.client.addUrlEx = function () {
+            $('#url').val('BAD FORMAT');
+        };
 
-        function onPlayerReady(event) {
-            event.target.playVideo();
-            player.seekTo(parseFloat(CurrentTime));
+        syncer.client.nextUrl = function (returnUrl) {
+            CurrentUrl = returnUrl;
+            syncUrlList(CurrentUrl);
+
+            player.stopVideo();
+            player.loadVideoById(CurrentUrl);
             scrollToUrl(CurrentUrl);
-        }
+        };
 
-        function onPlayerStateChange(event) {
-            if (event.data == YT.PlayerState.ENDED) {
-                syncer.server.nextUrl();
-            }
-            if (event.data == YT.PlayerState.PLAYING) {
-                syncer.server.goToTime(player.getCurrentTime(), GlobalRowV);
-            }
-        }
+        syncer.client.goToTime = function (time, version) {
+            GlobalRowV = version;
+            CurrentTime = time;
+            player.seekTo(parseFloat(CurrentTime));
+        };
 
-        /*********************** Load JewTube APi *******************************/
-        var tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        var firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        syncer.client.goToUrl = function (returnUrl) {
+            CurrentUrl = returnUrl;
+            syncUrlList(CurrentUrl);
+            player.stopVideo();
+            player.loadVideoById(CurrentUrl);
+            scrollToUrl(CurrentUrl);
+        };
 
-        /** Helper Functions **/
-        function htmlEncode(value) {
-            var encodedValue = $('<div />').text(value).html();
-            return encodedValue;
-        }
-
-        function syncUrlList(url){
-            var self = $("#" + url);
+        syncer.client.afterDelete = function (returnUrl, deleteThis) {
+            $('#' + deleteThis).remove();
+            CurrentUrl = returnUrl;
+            var self = $("#" + CurrentUrl);
             self.siblings().removeClass('active');
             self.addClass('active');
             self.siblings().find('#deleteUrl').addClass('hidden');
             self.find("#deleteUrl").removeClass('hidden');
+
+            player.stopVideo();
+            player.loadVideoById(CurrentUrl);
+            scrollToUrl(CurrentUrl);
         }
 
-        function scrollToUrl(url) {
-            $('div.scrollList').scrollTo($('div li:eq(' + $('#' + url).index() + ')'), 800);
-        }
-        function scrollToUrlFaster(url) {
-            $('div.scrollList').scrollTo($('div li:eq(' + $('#' + url).index() + ')'), 0);
-        }
-        //** Take regex match and run it towards youtubeAPi to extract title and validate id  **//
-        function callJewApi(video_id) {
-            if (video_id != null) {
-                video_id = video_id[1];
-                $.getJSON('http://gdata.youtube.com/feeds/api/videos/' + video_id + '?v=2&alt=jsonc', function () {
-                }).success(function (data, status, xhr) {
-                    syncer.server.addUrl(data.data.id, data.data.title);
-                    $('#url').val('');
-                })
-                .error(function () {
+        // Start the connection.
+        $.connection.hub.start().done(function () {
+            //Bindklick events after the Websocket is open. to ensure response.
+            $('#addurl').click(function () {
+                var inputUrl = $('#url').val();
+                if (inputUrl.length > 11) {
+                    var video_id = inputUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&amp;]v=)|youtu\.be\/)([^""&amp;?\/ ]{11})/);
+                    callJewApi(video_id);
+                }
+                else if (inputUrl.length === 11) {
+                    var video_id = inputUrl.match(/([a-zA-Z0-9_-]{11})/);
+                    callJewApi(video_id);
+                }
+                else {
                     $('#url').val('BAD FORMAT');
+                }
+            });
+
+            $('#nexturl').click(function () {
+                syncer.server.nextUrl();
+            });
+
+            $('#shuffleurl').click(function () {
+                syncer.server.shuffleUrl();
+            });
+
+            $('#urlListUL').on('click', '#deleteUrl', function () {
+                syncer.server.deleteUrl(CurrentUrl);
+            });
+
+            $('#urlListUL').on('click', 'li', function () {
+                var self = $(this);
+                if (CurrentUrl !== self.attr("id")) {
+                    syncer.server.goToUrl(self.attr("id"));
+                }
+            });
+
+            $("#fuzzysearch").keyup(function () {
+                var i, len, title, urls, query, relevance, ra, rb, elems, obj, results;
+                query = $("#fuzzysearch").val();
+                urls = JsonUrlList;//TODOS update this..... when adding element
+
+                //Array of li :s  remove dom objects Weight and sort and then insert into dom.
+                elems = $('#urlListUL').children('li').remove();
+
+                for (i = 0, len = urls.length; i < len; i++) {
+                    title = urls[i].Title;
+                    relevance = string_similarity(query, title);
+                    //Normalize relevance
+                    if (relevance < 0.1)
+                        relevance = 0
+
+                    elems.filter("#" + urls[i].UrlPart)[0].dataset.relevance = relevance.toFixed(2);
+                }
+
+                function cmp(a, b) { return a == b ? 0 : a < b ? 1 : -1; }
+                elems.sort(function (a, b) {
+                    //var a = $('#mydiv').data('myval');
+                    ra = a.dataset.relevance;
+                    rb = b.dataset.relevance;
+
+                    return cmp(parseFloat(ra), parseFloat(rb)); //ra - rb;
                 });
-            } else {
-                $('#url').val('BAD FORMAT');
+
+                $('#urlListUL').html(elems);
+                scrollToUrlFaster(elems[0].id);
+            });
+        });
+    });
+
+    /**** YOUTUBE FUNCTIONS ****/
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('player', {
+            height: '400',
+            width: '640',
+            videoId: CurrentUrl,
+            events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
             }
+        });
+    }
+
+    function onPlayerReady(event) {
+        event.target.playVideo();
+        player.seekTo(parseFloat(CurrentTime));
+        scrollToUrl(CurrentUrl);
+    }
+
+    function onPlayerStateChange(event) {
+        if (event.data == YT.PlayerState.ENDED) {
+            syncer.server.nextUrl();
         }
+        if (event.data == YT.PlayerState.PLAYING) {
+            syncer.server.goToTime(player.getCurrentTime(), GlobalRowV);
+        }
+    }
 
-        ///////////////// SORTING LAND
-        var get_bigrams, string_similarity;
+    /*********************** Load JewTube APi *******************************/
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-        get_bigrams = function (string) {
-            var i, j, ref, s, v;
-            s = string.toLowerCase();
-            v = new Array(s.length - 1);
-            for (i = j = 0, ref = v.length; j <= ref; i = j += 1) {
-                v[i] = s.slice(i, i + 2);
-            }
-            return v;
-        };
+    /** Helper Functions **/
+    function htmlEncode(value) {
+        var encodedValue = $('<div />').text(value).html();
+        return encodedValue;
+    }
 
-        string_similarity = function (str1, str2) {
-            var hit_count, j, k, len, len1, pairs1, pairs2, union, x, y;
-            if (str1.length > 0 && str2.length > 0) {
-                pairs1 = get_bigrams(str1);
-                pairs2 = get_bigrams(str2);
-                union = pairs1.length + pairs2.length;
-                hit_count = 0;
-                for (j = 0, len = pairs1.length; j < len; j++) {
-                    x = pairs1[j];
-                    for (k = 0, len1 = pairs2.length; k < len1; k++) {
-                        y = pairs2[k];
-                        if (x === y) {
-                            hit_count++;
-                        }
+    function syncUrlList(url) {
+        var self = $("#" + url);
+        self.siblings().removeClass('active');
+        self.addClass('active');
+        self.siblings().find('#deleteUrl').addClass('hidden');
+        self.find("#deleteUrl").removeClass('hidden');
+    }
+
+    function scrollToUrl(url) {
+        $('div.scrollList').scrollTo($('div li:eq(' + $('#' + url).index() + ')'), 800);
+    }
+    function scrollToUrlFaster(url) {
+        $('div.scrollList').scrollTo($('div li:eq(' + $('#' + url).index() + ')'), 0);
+    }
+    //** Take regex match and run it towards youtubeAPi to extract title and validate id  **//
+    function callJewApi(video_id) {
+        if (video_id != null) {
+            video_id = video_id[1];
+            $.getJSON('http://gdata.youtube.com/feeds/api/videos/' + video_id + '?v=2&alt=jsonc', function () {
+            }).success(function (data, status, xhr) {
+                syncer.server.addUrl(data.data.id, data.data.title);
+                $('#url').val('');
+            })
+            .error(function () {
+                $('#url').val('BAD FORMAT');
+            });
+        } else {
+            $('#url').val('BAD FORMAT');
+        }
+    }
+
+    ///////////////// SORTING LAND
+    var get_bigrams, string_similarity;
+
+    get_bigrams = function (string) {
+        var i, j, ref, s, v;
+        s = string.toLowerCase();
+        v = new Array(s.length - 1);
+        for (i = j = 0, ref = v.length; j <= ref; i = j += 1) {
+            v[i] = s.slice(i, i + 2);
+        }
+        return v;
+    };
+
+    string_similarity = function (str1, str2) {
+        var hit_count, j, k, len, len1, pairs1, pairs2, union, x, y;
+        if (str1.length > 0 && str2.length > 0) {
+            pairs1 = get_bigrams(str1);
+            pairs2 = get_bigrams(str2);
+            union = pairs1.length + pairs2.length;
+            hit_count = 0;
+            for (j = 0, len = pairs1.length; j < len; j++) {
+                x = pairs1[j];
+                for (k = 0, len1 = pairs2.length; k < len1; k++) {
+                    y = pairs2[k];
+                    if (x === y) {
+                        hit_count++;
                     }
                 }
-                if (hit_count > 0) {
-                    return (2.0 * hit_count) / union;
-                }
             }
-            return 0.0;
-        };
+            if (hit_count > 0) {
+                return (2.0 * hit_count) / union;
+            }
+        }
+        return 0.0;
+    };
 </script>
 }

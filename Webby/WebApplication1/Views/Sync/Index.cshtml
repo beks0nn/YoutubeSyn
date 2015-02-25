@@ -15,14 +15,24 @@
                                 {
                                     <li id="@item.UrlPart" class="list-group-item urlli"  data-relevance="0">
                                         @item.Title
-                                        <div class="glyphicon glyphicon-remove urldiv hidden" id="deleteUrl" />
+                                        <div class="glyphicon glyphicon-remove urldiv redActive hidden" id="deleteUrl"></div>
+                                        <div class="glyphicon glyphicon-refresh urldiv hidden" id="repeatUrl"></div>
+                                        
                                     </li>
                                 }
                                 else
                                 {
                                     <li id="@item.UrlPart" class="list-group-item urlli active" data-relevance="0">
                                         @item.Title
-                                        <div class="glyphicon glyphicon-remove urldiv" id="deleteUrl" />
+                                        <div class="glyphicon glyphicon-remove urldiv redActive" id="deleteUrl"></div>
+                                        @if (Model.isRepeat)
+                                        {
+                                            <div class="glyphicon glyphicon-refresh urldiv cloroedRep" id="repeatUrl"></div>
+                                        }
+                                        else
+                                        {
+                                            <div class="glyphicon glyphicon-refresh urldiv" id="repeatUrl"></div>
+                                        }
                                     </li>
                                 }
                             }
@@ -60,6 +70,7 @@
     var GlobalRowV = "@Model.RowVersion";
     var CurrentUrl = "@Model.UrlCurrent";
     var CurrentTime = "@Model.CurrentTime";
+    var IsRepeat = "@Model.isRepeat.ToString().ToLower()";
     var JsonUrlList = $.parseJSON(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.jSonList))));
 
     var player;//The Youtube player
@@ -72,7 +83,7 @@
     $(function () {
         // CLIENT SIDE FUNCTIONS (USED BY HUB)
         syncer.client.addUrl = function (url, title) {
-            $('#urlListUL').append('<li id="' + url + '"class="list-group-item urlli" data-relevance="0">' + title + '<div class="glyphicon glyphicon-remove urldiv hidden" id="deleteUrl" /></li>');
+            $('#urlListUL').append('<li id="' + url + '"class="list-group-item urlli" data-relevance="0">' + title + '<div class="glyphicon glyphicon-remove urldiv redActive hidden" id="deleteUrl"></div><div class="glyphicon glyphicon-refresh urldiv hidden" id="repeatUrl"></div></li>');
             JsonUrlList.push({
                 UrlPart: url,
                 Title: title
@@ -86,7 +97,7 @@
         syncer.client.nextUrl = function (returnUrl) {
             CurrentUrl = returnUrl;
             syncUrlList(CurrentUrl);
-
+            IsRepeat = false;
             player.stopVideo();
             player.loadVideoById(CurrentUrl);
             scrollToUrl(CurrentUrl);
@@ -101,6 +112,7 @@
         syncer.client.goToUrl = function (returnUrl) {
             CurrentUrl = returnUrl;
             syncUrlList(CurrentUrl);
+            IsRepeat = false;
             player.stopVideo();
             player.loadVideoById(CurrentUrl);
             scrollToUrl(CurrentUrl);
@@ -114,11 +126,21 @@
             self.addClass('active');
             self.siblings().find('#deleteUrl').addClass('hidden');
             self.find("#deleteUrl").removeClass('hidden');
-
+            IsRepeat = false;
             player.stopVideo();
             player.loadVideoById(CurrentUrl);
             scrollToUrl(CurrentUrl);
         }
+
+        syncer.client.setRepeat = function (setBool,currentUrl) {
+            IsRepeat = setBool;
+            var self = $("#" + CurrentUrl);
+
+            if (IsRepeat)
+                self.find('#repeatUrl').addClass("cloroedRep");
+            else
+                self.find('#repeatUrl').removeClass("cloroedRep");
+        };
 
         // Start the connection.
         $.connection.hub.start().done(function () {
@@ -148,6 +170,13 @@
 
             $('#urlListUL').on('click', '#deleteUrl', function () {
                 syncer.server.deleteUrl(CurrentUrl);
+            });
+
+            $('#urlListUL').on('click', '#repeatUrl', function () {
+                if (IsRepeat)
+                    syncer.server.setRepeat(CurrentUrl, false);
+                else
+                    syncer.server.setRepeat(CurrentUrl, true);
             });
 
             $('#urlListUL').on('click', 'li', function () {
@@ -211,7 +240,10 @@
 
     function onPlayerStateChange(event) {
         if (event.data == YT.PlayerState.ENDED) {
-            syncer.server.nextUrl();
+            if (!IsRepeat)
+                syncer.server.nextUrl();
+            else
+                player.seekTo(0);
         }
         if (event.data == YT.PlayerState.PLAYING) {
             syncer.server.goToTime(player.getCurrentTime(), GlobalRowV);
@@ -235,7 +267,11 @@
         self.siblings().removeClass('active');
         self.addClass('active');
         self.siblings().find('#deleteUrl').addClass('hidden');
+        var repeatUrlDivs = self.siblings().find('#repeatUrl');
+        repeatUrlDivs.addClass('hidden');
+        repeatUrlDivs.removeClass('cloroedRep');
         self.find("#deleteUrl").removeClass('hidden');
+        self.find("#repeatUrl").removeClass('hidden');
     }
 
     function scrollToUrl(url) {

@@ -139,6 +139,14 @@ namespace WebApplication1.Hubs
 
         }
 
+        public void SetRepeat(string url, bool set)
+        {
+            var currUrl = mongo.GetAllCurrUrls().First();
+            mongo.updateCurrUrlRepeat(currUrl.Id, set);
+
+            Clients.All.setRepeat(set, url);
+        }
+
         #region Helpers 
         private static Regex YOUTUBESANITY = new Regex(@"[a-zA-Z0-9_-]{11}");
         public string SanityScrub(string url)

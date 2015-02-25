@@ -34,6 +34,7 @@ namespace WebApplication1.Controllers
             retModel.UrlCurrent = CurrentUrl.UrlPart;
             retModel.RowVersion = currentUrlObj.version.ToString();
             retModel.jSonList = JsonConvert.SerializeObject(retUrlList);
+            retModel.isRepeat = currentUrlObj.isRepeat;
             return retModel;
         }
 

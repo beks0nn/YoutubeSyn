@@ -94,7 +94,7 @@ namespace WebApplication1.MongoDBLayer
         {
             var collection = getCurrUrlsCollectionForEdit();
             var query = Query<CurrUrl>.EQ(e => e.Id, id);
-            var update = Update<CurrUrl>.Set(e => e.UrlIdentity, pointTo).Set(e=> e.version, Guid.NewGuid()).Set(e => e.time,"0"); // update modifiers
+            var update = Update<CurrUrl>.Set(e => e.UrlIdentity, pointTo).Set(e => e.isRepeat, false).Set(e=> e.version, Guid.NewGuid()).Set(e => e.time,"0"); // update modifiers
             collection.Update(query, update);
         }
 
@@ -103,6 +103,14 @@ namespace WebApplication1.MongoDBLayer
             var collection = getCurrUrlsCollectionForEdit();
             var query = Query<CurrUrl>.EQ(e => e.Id, id);
             var update = Update<CurrUrl>.Set(e => e.time, time).Set(e => e.version,Guid.NewGuid()); // update modifiers
+            collection.Update(query, update);
+        }
+
+        public void updateCurrUrlRepeat(Guid id, bool setBool)
+        {
+            var collection = getCurrUrlsCollectionForEdit();
+            var query = Query<CurrUrl>.EQ(e => e.Id, id);
+            var update = Update<CurrUrl>.Set(e => e.isRepeat, setBool).Set(e => e.version, Guid.NewGuid()); // update modifiers
             collection.Update(query, update);
         }
 

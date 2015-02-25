@@ -419,11 +419,12 @@ body {
 
 .urldiv{
     display: inline-block;
+    padding-left: .5em;
     float: right !important;
 }
 
-.urldiv:active {
-    color:red;
+.redActive:active {
+    color:#E2535F;
 }
 .urldiv:hover {
     cursor: pointer;
@@ -450,4 +451,7 @@ body {
 .fuzzyinput{
     height:3.5em;
     width:100% !important;
+}
+.cloroedRep{
+    color:#8fbc8f;
 }

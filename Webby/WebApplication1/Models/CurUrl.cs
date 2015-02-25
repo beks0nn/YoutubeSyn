@@ -19,5 +19,7 @@ namespace WebApplication1.Models
         public Guid version { get; set; }
         [BsonElement("time")]
         public string time { get; set; }
+        [BsonElement("isRepeat")]
+        public bool isRepeat { get; set; }
     }
 }

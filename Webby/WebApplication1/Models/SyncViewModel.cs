@@ -11,5 +11,6 @@ namespace WebApplication1.Models
         public string UrlCurrent { get; set; }
         public string RowVersion { get; set; }
         public string CurrentTime { get; set; }
+        public bool isRepeat { get; set; }
     }
 }

@@ -120,12 +120,11 @@
 
         syncer.client.afterDelete = function (returnUrl, deleteThis) {
             $('#' + deleteThis).remove();
+            //Delete Json item from search array
+            JsonUrlList = $.grep(JsonUrlList, function (e) { return e.UrlPart != deleteThis });
+
             CurrentUrl = returnUrl;
-            var self = $("#" + CurrentUrl);
-            self.siblings().removeClass('active');
-            self.addClass('active');
-            self.siblings().find('#deleteUrl').addClass('hidden');
-            self.find("#deleteUrl").removeClass('hidden');
+            syncUrlList(CurrentUrl);
             IsRepeat = false;
             player.stopVideo();
             player.loadVideoById(CurrentUrl);

@@ -3,12 +3,14 @@
     <div class="container">
         <div class="row">
             <div class="col-md-8" id="diviFramePart">
-                <div id="player"></div>
+                <div class="embed-responsive embed-responsive-16by9">
+                    <div id="player"></div>
+                </div>
             </div>
             <div class="col-md-4">
                 <div id="divUrlList">
                     <div class="row scrollList" id="searchResults">
-                        <ul class="list-group" id="urlListUL">
+                        <ul class="list-group mainLi" id="urlListUL">
                             @foreach (var item in Json.Decode(Model.jSonList))
                             {
                                 if (item.UrlPart != Model.UrlCurrent)
@@ -224,8 +226,8 @@
     /**** YOUTUBE FUNCTIONS ****/
     function onYouTubeIframeAPIReady() {
         player = new YT.Player('player', {
-            height: '400',
-            width: '640',
+            height: '1',
+            width: '1',
             videoId: CurrentUrl,
             events: {
                 'onReady': onPlayerReady,

@@ -401,7 +401,7 @@ body {
 }
 
 .scrollList {
-    height:17.5em;
+    height:20em;
     overflow-y: scroll;
     overflow-x: hidden;
 
@@ -470,4 +470,5 @@ body {
 
 .mainLi{
     padding-top:1em;
+    padding-bottom:1em;
 }

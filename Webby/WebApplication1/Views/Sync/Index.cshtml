@@ -7,19 +7,19 @@
                     <div id="player"></div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 mainLi">
                 <div id="divUrlList">
                     <div class="row scrollList" id="searchResults">
-                        <ul class="list-group mainLi" id="urlListUL">
+                        <ul class="list-group" id="urlListUL">
                             @foreach (var item in Json.Decode(Model.jSonList))
                             {
                                 if (item.UrlPart != Model.UrlCurrent)
                                 {
-                                    <li id="@item.UrlPart" class="list-group-item urlli"  data-relevance="0">
+                                    <li id="@item.UrlPart" class="list-group-item urlli" data-relevance="0">
                                         @item.Title
                                         <div class="glyphicon glyphicon-remove urldiv redActive hidden" id="deleteUrl"></div>
                                         <div class="glyphicon glyphicon-refresh urldiv hidden" id="repeatUrl"></div>
-                                        
+
                                     </li>
                                 }
                                 else

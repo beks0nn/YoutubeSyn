@@ -25,16 +25,15 @@ namespace WebApplication1.Controllers
         public SyncViewModel PopulateViewModel()
         {
             var retModel = new SyncViewModel();
-            var urlList = mongo.GetAllUrls();
-            var currentUrlObj = mongo.GetAllCurrUrls().First();
-            var CurrentUrl = urlList.First(e => e.Id == currentUrlObj.UrlIdentity);
-            var retUrlList = urlList.Select(e => new SmallerUrl() { Title = WebUtility.HtmlDecode(e.Title), UrlPart = e.UrlPart });
+            var playList = mongo.GetAllPlayLists().First();
+            var retUrlList = playList.UrlList.Select(e => new SmallerUrl() { Title = WebUtility.HtmlDecode(e.Title), UrlPart = e.UrlPart });
 
-            retModel.CurrentTime = currentUrlObj.time;
-            retModel.UrlCurrent = CurrentUrl.UrlPart;
-            retModel.RowVersion = currentUrlObj.version.ToString();
+            retModel.RowVersion = playList.version.ToString();
+            retModel.UrlCurrent = playList.CurrentUrl;
+            retModel.isRepeat = playList.isRepeat;
+            retModel.CurrentTime = playList.time;
             retModel.jSonList = JsonConvert.SerializeObject(retUrlList);
-            retModel.isRepeat = currentUrlObj.isRepeat;
+
             return retModel;
         }
 

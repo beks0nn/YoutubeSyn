@@ -8,13 +8,23 @@ using MongoDB.Bson;
 
 namespace WebApplication1.Models
 {
-    public class CurrUrl
+    public class PlayList
     {
         [BsonId(IdGenerator = typeof(CombGuidGenerator))]
         public Guid Id { get; set; }
 
-        [BsonElement("CurrUrl")]
-        public Guid UrlIdentity { get; set; }
+        [BsonElement("Name")]
+        public string Name { get; set; }
+
+        [BsonElement("Owner")]
+        public Guid Owner { get; set; }
+
+        [BsonElement("UrlList")]
+        public List<Url> UrlList { get; set; }
+
+        //Curret URL  info. 
+        [BsonElement("CurrentUrl")]
+        public string CurrentUrl { get; set; }
         [BsonElement("version")]
         public Guid version { get; set; }
         [BsonElement("time")]

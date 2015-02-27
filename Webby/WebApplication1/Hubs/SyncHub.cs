@@ -23,7 +23,8 @@ namespace WebApplication1.Hubs
                 url = SanityScrub(url);
                 urlToAdd.UrlPart = url;
                 urlToAdd.Title = scrubTitle;
-                mongo.CreateUrl(urlToAdd);
+                mongo.AddUrlToList(urlToAdd, Guid.NewGuid());//TODOS Only 1 playlist for now as there are no users.
+
                 Clients.All.addUrl(url, WebUtility.HtmlDecode(scrubTitle));
             }
             catch (UrlFormatException)
@@ -36,45 +37,48 @@ namespace WebApplication1.Hubs
             }
         }
 
+        public void DeleteUrl(string url)
+        {
+            mongo.RemoveUrlFromList(url);//TODOS Only 1 playlist for now as there are no users.
+            /*SHUFFLE CODE*/
+            var playList = mongo.GetAllPlayLists().First();
+            var r = RND.Next(playList.UrlList.Count);
+            mongo.UpdatePlayListCurrentUrl(playList.Id, playList.UrlList[r].UrlPart); 
+            /**/
+            Clients.All.afterDelete(playList.UrlList[r].UrlPart, url);
+
+        }
+
         public void NextUrl()
         {
             //Mabey not use mongoloid function here,  shape up
             var returnUrl = "";
-            var urlList = mongo.GetAllUrls();
-            var currUrlObj = mongo.GetAllCurrUrls().First();
+            var playList = mongo.GetAllPlayLists().First();
 
-            if (urlList.Count() < 2) //IF LIST IS ONLY 1 ELEMENT
+            if (playList.UrlList.Count() < 2) //IF LIST IS ONLY 1 ELEMENT
             {
-                returnUrl = urlList.First().UrlPart;
+                returnUrl = playList.UrlList.First().UrlPart;
                 
             }
             else //IF LIST IS SEVERAL ELEMENTS
             {
 
-                var currUrlObjPOINTINGAT = currUrlObj.UrlIdentity;
-                var index = urlList.FindIndex(m => m.Id == currUrlObjPOINTINGAT);
+                var index = playList.UrlList.FindIndex(m => m.UrlPart == playList.CurrentUrl);
                 try
                 {
                     //IF AT END OF LIST
-                    if (index + 1 >= urlList.Count())
+                    if (index + 1 >= playList.UrlList.Count())
                     {
                         index = 0;
-                        var newid = urlList[index].Id;
-                        mongo.updateCurrUrl(currUrlObj.Id, newid);
-                        returnUrl = urlList.First().UrlPart;
+                        returnUrl = playList.UrlList[index].UrlPart;
+                        mongo.UpdatePlayListCurrentUrl(playList.Id, returnUrl);
                     }
                     else
                     {
                         //UpdateDB ITEM
                         index = index + 1;
-                        var newid = urlList[index].Id;
-                        mongo.updateCurrUrl(currUrlObj.Id, newid);
-
-
-                        var ReturnUrl = urlList.Single(i => i.Id == newid);
-                        /*** Send less data... ***/
-                        returnUrl = ReturnUrl.UrlPart;
-
+                        returnUrl = playList.UrlList[index].UrlPart;
+                        mongo.UpdatePlayListCurrentUrl(playList.Id, returnUrl);
                     }
                 }
                 catch (Exception ex)
@@ -88,61 +92,45 @@ namespace WebApplication1.Hubs
 
         public void GoToTime(string time,string rowV)
         {
-            var currUrl = mongo.GetAllCurrUrls().First();
+            var playList = mongo.GetAllPlayLists().First();
             decimal yTimeIN = decimal.Parse(time);
-            decimal yTimeCurr = decimal.Parse(currUrl.time);
+            decimal yTimeCurr = decimal.Parse(playList.time);
             var diff = yTimeIN - yTimeCurr;
 
-            if (currUrl.version.ToString() == rowV)
+            if (playList.version.ToString() == rowV)
             {
                 if (diff <= -5 || diff >= 5)
                 {
-                    mongo.updateCurrUrlTime(currUrl.Id, time);
-                    var updatedcurrUrl = mongo.GetAllCurrUrls().First();
-                    Clients.All.goToTime(time, updatedcurrUrl.version);
+                    var newVersion = mongo.UpdatePlayListTime(playList.Id, time);//Get updated version set new time and version
+                    Clients.All.goToTime(time, newVersion);
                 }
             }
             else
             {
-                Clients.Caller.goToTime(currUrl.time, currUrl.version);
+                Clients.Caller.goToTime(playList.time, playList.version);
             }
         }
 
         public void GoToUrl(string url)
         {
-            var currUrl = mongo.GetAllCurrUrls().First();
-            var toId = mongo.GetAllUrls().First(e => e.UrlPart == url);
-            mongo.updateCurrUrl(currUrl.Id, toId.Id);
-
+            var playList = mongo.GetAllPlayLists().First();
+            mongo.UpdatePlayListCurrentUrl(playList.Id, url);
             Clients.All.goToUrl(url);
         }
 
         public void ShuffleUrl()
         {
-            var currUrl = mongo.GetAllCurrUrls().First();
-            var urlList = mongo.GetAllUrls().ToList();
-            var r = RND.Next(urlList.Count);
-            mongo.updateCurrUrl(currUrl.Id, urlList[r].Id);
-            Clients.All.goToUrl(urlList[r].UrlPart);
-        }
+            var playList = mongo.GetAllPlayLists().First();
 
-        public void DeleteUrl(string url)
-        {
-            mongo.DeleteUrl(url);
-            /*SHUFFLE CODE*/
-            var currUrl = mongo.GetAllCurrUrls().First();
-            var urlList = mongo.GetAllUrls().ToList();
-            var r = RND.Next(urlList.Count);
-            mongo.updateCurrUrl(currUrl.Id, urlList[r].Id);
-            /**/
-            Clients.All.afterDelete(urlList[r].UrlPart, url);
-
+            var r = RND.Next(playList.UrlList.Count);
+            mongo.UpdatePlayListCurrentUrl(playList.Id, playList.UrlList[r].UrlPart);
+            Clients.All.goToUrl(playList.UrlList[r].UrlPart);
         }
 
         public void SetRepeat(string url, bool set)
         {
-            var currUrl = mongo.GetAllCurrUrls().First();
-            mongo.updateCurrUrlRepeat(currUrl.Id, set);
+            var playList = mongo.GetAllPlayLists().First();
+            mongo.UpdatePlayListRepeat(playList.Id, set);
 
             Clients.All.setRepeat(set, url);
         }

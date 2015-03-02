@@ -48,7 +48,6 @@ namespace WebApplication1.MongoDBLayer
             var query = Query<PlayList>.EQ(e => e.Id, id);
             var update = Update<PlayList>.Set(e => e.time, time).Set(e => e.version, newVersion); // update modifiers
             collection.Update(query, update);
-
             return newVersion;
         }
 

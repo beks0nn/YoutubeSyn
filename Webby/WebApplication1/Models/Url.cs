@@ -11,9 +11,6 @@ namespace WebApplication1.Models
 {
     public class Url
     {
-        [BsonId(IdGenerator = typeof(CombGuidGenerator))]
-        public Guid Id { get; set; }
-
         [BsonElement("Url")]
         public string UrlPart { get; set; }
 

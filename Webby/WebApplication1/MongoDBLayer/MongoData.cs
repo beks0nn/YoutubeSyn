@@ -58,6 +58,14 @@ namespace WebApplication1.MongoDBLayer
             try
             {
                 playListId = collection.FindAll().First().Id;//temporary
+
+                //DO better solution here... 
+                var query = Query.EQ("UrlList.Url", url.UrlPart);
+                var items = collection.Find(query).ToList();
+                if (items.Count > 0)
+                    throw new Exception();
+
+                //collection.Update(Query.And(Query<PlayList>.EQ(e => e.Id, playListId), Query.NE("UrlList", url.UrlPart)), Update.AddToSetWrapped("UrlList", url), WriteConcern.Acknowledged); 
                 collection.Update(Query<PlayList>.EQ(e => e.Id, playListId), Update.AddToSetWrapped("UrlList", url));
             }
             catch (MongoCommandException ex)

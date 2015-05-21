@@ -71,7 +71,7 @@
 
 @section scripts {
     <script>
-    /** Init Vars from Model here ( Only from first page load).  **/
+        /** Init Vars from Model here ( Only from first page load).  **/
     var GlobalRowV = "@Model.RowVersion";
     var CurrentUrl = "@Model.UrlCurrent";
     var CurrentTime = "@Model.CurrentTime";
@@ -292,9 +292,9 @@
     function callJewApi(video_id) {
         if (video_id != null) {
             video_id = video_id[1];
-            $.getJSON('http://gdata.youtube.com/feeds/api/videos/' + video_id + '?v=2&alt=jsonc', function () {
+            $.getJSON("https://www.googleapis.com/youtube/v3/videos?id=" + video_id + "&key=AIzaSyDQMjfzyAgCOJ6opn-loMv9_B_ztwZQXG4&fields=items%28id,snippet%28title%29%29&part=snippet", function () {
             }).success(function (data, status, xhr) {
-                syncer.server.addUrl(data.data.id, data.data.title);
+                syncer.server.addUrl(data.items[0].id, data.items[0].snippet.title);
                 $('#url').val('');
             })
             .error(function () {

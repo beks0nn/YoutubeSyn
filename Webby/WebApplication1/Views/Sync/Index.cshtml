@@ -13,30 +13,11 @@
                         <ul class="list-group" id="urlListUL">
                             @foreach (var item in Json.Decode(Model.jSonList))
                             {
-                                if (item.UrlPart != Model.UrlCurrent)
-                                {
-                                    <li id="@item.UrlPart" class="list-group-item urlli" data-relevance="0">
+                                    <li id="@item.UrlPart" class="list-group-item urlli @(item.UrlPart != Model.UrlCurrent ? "" : "active")" data-relevance="0">
                                         @item.Title
-                                        <div class="glyphicon glyphicon-remove urldiv redActive hidden" id="deleteUrl"></div>
-                                        <div class="glyphicon glyphicon-refresh urldiv hidden" id="repeatUrl"></div>
-
+                                        <div class="glyphicon glyphicon-remove urldiv redActive @(item.UrlPart != Model.UrlCurrent ? "hidden " : "")" id="deleteUrl"></div>
+                                        <div class="glyphicon glyphicon-refresh urldiv @(item.UrlPart != Model.UrlCurrent ? "hidden " : "")@(Model.isRepeat == true ? "cloroedRep" : "")" id="repeatUrl"></div>
                                     </li>
-                                }
-                                else
-                                {
-                                    <li id="@item.UrlPart" class="list-group-item urlli active" data-relevance="0">
-                                        @item.Title
-                                        <div class="glyphicon glyphicon-remove urldiv redActive" id="deleteUrl"></div>
-                                        @if (Model.isRepeat)
-                                        {
-                                            <div class="glyphicon glyphicon-refresh urldiv cloroedRep" id="repeatUrl"></div>
-                                        }
-                                        else
-                                        {
-                                            <div class="glyphicon glyphicon-refresh urldiv" id="repeatUrl"></div>
-                                        }
-                                    </li>
-                                }
                             }
                         </ul>
                     </div>
@@ -71,11 +52,11 @@
 
 @section scripts {
     <script>
-        /** Init Vars from Model here ( Only from first page load).  **/
+    /** Init Vars from Model here ( Only from page load).  **/
     var GlobalRowV = "@Model.RowVersion";
     var CurrentUrl = "@Model.UrlCurrent";
     var CurrentTime = "@Model.CurrentTime";
-    var IsRepeat = "@Model.isRepeat.ToString().ToLower()";
+    var IsRepeat = $.parseJSON(@Model.isRepeat.ToString().ToLower());
     var JsonUrlList = $.parseJSON(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.jSonList))));
 
     var player;//The Youtube player
@@ -248,10 +229,13 @@
 
     function onPlayerStateChange(event) {
         if (event.data == YT.PlayerState.ENDED) {
-            if (!IsRepeat)
+            console.log(IsRepeat);
+            if (!IsRepeat) {
                 syncer.server.nextUrl();
-            else
+            }
+            else {
                 player.seekTo(0);
+            }
         }
         if (event.data == YT.PlayerState.PLAYING) {
             syncer.server.goToTime(player.getCurrentTime(), GlobalRowV);

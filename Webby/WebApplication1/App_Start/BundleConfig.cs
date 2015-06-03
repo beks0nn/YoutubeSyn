@@ -10,23 +10,17 @@ namespace WebApplication1
             bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
                         "~/Scripts/jquery-{version}.js",
                         "~/Scripts/jquery.scrollTo.min.js"
-                        //"~/Scripts/jquery.unobtrusive-ajax.js"
-                      
                         ));
 
             bundles.Add(new ScriptBundle("~/bundles/jqueryval").Include(
                         "~/Scripts/jquery.validate*"
                         ));
 
-            // ready for production, use the build tool at http://modernizr.com to pick only the tests you need.
-            bundles.Add(new ScriptBundle("~/bundles/modernizr").Include(
-                        "~/Scripts/modernizr-*"
-                        ));
-
             bundles.Add(new ScriptBundle("~/bundles/js").Include(
-                      "~/Scripts/bootstrap.js",
-                      "~/Scripts/respond.js",
-                      "~/Scripts/underscore.js"
+                      "~/Scripts/bootstrap.min.js",
+                      "~/Scripts/respond.min.js",
+                      "~/Scripts/underscore.js",
+                      "~/Scripts/jquery.signalR-2.2.0.min.js"
                       ));
 
             bundles.Add(new StyleBundle("~/Content/css").Include(
@@ -35,8 +29,19 @@ namespace WebApplication1
                       "~/Content/clean-blog.css"
                       ));
 
+
+
+            // ready for production, use the build tool at http://modernizr.com to pick only the tests you need.
+            bundles.Add(new ScriptBundle("~/bundles/modernizr").Include(
+                        "~/Scripts/modernizr-*"
+                        ));
+
             //!!Comment out if you don't want minification!!.
             BundleTable.EnableOptimizations = true;
+
+
+
+
         }
     }
 }

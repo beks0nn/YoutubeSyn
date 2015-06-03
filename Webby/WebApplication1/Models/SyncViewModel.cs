@@ -12,5 +12,6 @@ namespace WebApplication1.Models
         public string RowVersion { get; set; }
         public string CurrentTime { get; set; }
         public bool isRepeat { get; set; }
+        public bool isShuffle { get; set; }
     }
 }

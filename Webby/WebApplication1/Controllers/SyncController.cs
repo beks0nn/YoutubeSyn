@@ -31,6 +31,7 @@ namespace WebApplication1.Controllers
             retModel.RowVersion = playList.version.ToString();
             retModel.UrlCurrent = playList.CurrentUrl;
             retModel.isRepeat = playList.isRepeat;
+            retModel.isShuffle = playList.isShuffle;
             retModel.CurrentTime = playList.time;
             retModel.jSonList = JsonConvert.SerializeObject(retUrlList);
 

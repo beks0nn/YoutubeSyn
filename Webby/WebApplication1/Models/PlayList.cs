@@ -31,5 +31,7 @@ namespace WebApplication1.Models
         public string time { get; set; }
         [BsonElement("isRepeat")]
         public bool isRepeat { get; set; }
+        [BsonElement("isShuffle")]
+        public bool isShuffle { get; set; }
     }
 }

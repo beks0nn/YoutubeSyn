@@ -121,16 +121,29 @@ namespace WebApplication1.Hubs
         public void ShuffleUrl()
         {
             var playList = mongo.GetAllPlayLists().First();
-
             var r = RND.Next(playList.UrlList.Count);
             mongo.UpdatePlayListCurrentUrl(playList.Id, playList.UrlList[r].UrlPart);
             Clients.All.goToUrl(playList.UrlList[r].UrlPart);
         }
 
+        public void InitShuffleUrl()
+        {
+            var playList = mongo.GetAllPlayLists().First();
+            var setter = playList.isShuffle ? false : true;
+            mongo.UpdatePlayListShuffle(playList.Id, setter);
+            var r = RND.Next(playList.UrlList.Count);
+            mongo.UpdatePlayListCurrentUrl(playList.Id, playList.UrlList[r].UrlPart);
+
+            Clients.All.initShuffleUrl(playList.UrlList[r].UrlPart, setter);
+        }
+
+
         public void SetRepeat(string url, bool set)
         {
             var playList = mongo.GetAllPlayLists().First();
             mongo.UpdatePlayListRepeat(playList.Id, set);
+            if (set)
+                mongo.UpdatePlayListShuffle(playList.Id, false);
 
             Clients.All.setRepeat(set, url);
         }

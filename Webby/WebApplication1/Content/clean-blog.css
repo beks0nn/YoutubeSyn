@@ -338,12 +338,20 @@ form .row:first-child .floating-label-form-group {
   font-size: 16px;
   padding: 25px 35px;
 }
+
 .btn-default:hover,
 .btn-default:focus {
   background-color: #0085a1;
   border: 1px solid #0085a1;
   color: white;
 }
+
+.isShuff {
+    background-color: #00a195;
+    border: 1px solid #00a195;
+    color: white;
+}
+
 .pager {
   margin: 20px 0 0;
 }

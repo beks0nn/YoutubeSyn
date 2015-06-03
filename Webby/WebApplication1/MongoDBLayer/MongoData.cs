@@ -41,6 +41,14 @@ namespace WebApplication1.MongoDBLayer
             collection.Update(query, update);
         }
 
+        public void UpdatePlayListShuffle(Guid id, bool setBool)
+        {
+            var collection = GetPlayListForEdit();
+            var query = Query<PlayList>.EQ(e => e.Id, id);
+            var update = Update<PlayList>.Set(e => e.isShuffle, setBool).Set(e => e.version, Guid.NewGuid()); // update modifiers
+            collection.Update(query, update);
+        }
+
         public Guid UpdatePlayListTime(Guid id, string time)
         {
             var newVersion = Guid.NewGuid();

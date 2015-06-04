@@ -15,8 +15,8 @@
                             {
                                 <li id="@item.UrlPart" class="list-group-item urlli @(item.UrlPart != Model.UrlCurrent ? "" : "active")" data-relevance="0">
                                     @item.Title
-                                    <div class="glyphicon glyphicon-remove urldiv redActive @(item.UrlPart != Model.UrlCurrent ? "hidden " : "")" id="deleteUrl"></div>
-                                    <div class="glyphicon glyphicon-refresh urldiv @(item.UrlPart != Model.UrlCurrent ? "hidden " : "")@(Model.isRepeat == true ? "cloroedRep" : "")" id="repeatUrl"></div>
+                                    <div id="deleteUrl" class="glyphicon glyphicon-remove urldiv redActive @(item.UrlPart != Model.UrlCurrent ? "hidden " : "")"></div>
+                                    <div id="repeatUrl" class="glyphicon glyphicon-refresh urldiv @(item.UrlPart != Model.UrlCurrent ? "hidden " : "")@(Model.isRepeat == true ? "cloroedRep" : "")"></div>
                                 </li>
                             }
                         </ul>
@@ -49,7 +49,6 @@
     <hr>
 </body>
 
-
 @section scripts {
     <script>
         /** Init Vars from Model here ( Only from page load).  **/
@@ -65,7 +64,7 @@
         var options = {
             keys: ['Title'],   // keys to search in
             id: 'UrlPart'     // return a list of identifiers only
-        }
+        };
 
         $(function () {
             // CLIENT SIDE FUNCTIONS (USED BY HUB)
@@ -116,7 +115,7 @@
                 player.stopVideo();
                 player.loadVideoById(CurrentUrl);
                 scrollToUrl(CurrentUrl);
-            }
+            };
 
             syncer.client.setRepeat = function (setBool, setUrl) {
                 IsRepeat = setBool;
@@ -151,15 +150,15 @@
                     this.blur();
                     var inputUrl, video_id, regxLong, regxShort;
                     inputUrl = $('#url').val();
-                    regxLong = /https?:\/\/(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube(?:-nocookie)?\.com\S*[^\w\s-])([\w-]{11})(?=[^\w-]|$)(?![?=&+%\w.-]*(?:['"][^<>]*>|<\/a>))[?=&+%\w.-]*/ig;
-                    regxShort = /([a-zA-Z0-9_-]{11})/;
+                    rx = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/;
+                    rxs = /([a-zA-Z0-9_-]{11})/;
 
                     if (inputUrl.length > 11) {
-                        video_id = regxLong.exec(inputUrl);
+                        video_id = inputUrl.match(rx);
                         callJewApi(video_id);
                     }
                     else if (inputUrl.length === 11) {
-                        video_id = regxShort.exec(inputUrl);
+                        video_id = inputUrl.match(rxs);
                         callJewApi(video_id);
                     }
                     else {
@@ -239,13 +238,13 @@
                     'onStateChange': onPlayerStateChange
                 }
             });
-        }
+        };
 
         function onPlayerReady(event) {
             event.target.playVideo();
             player.seekTo(parseFloat(CurrentTime));
             scrollToUrl(CurrentUrl);
-        }
+        };
 
         function onPlayerStateChange(event) {
             if (event.data == YT.PlayerState.ENDED) {
@@ -258,13 +257,13 @@
                 }
                 else {
                     syncer.server.nextUrl();
-                    
+
                 }
             }
             if (event.data == YT.PlayerState.PLAYING) {
                 syncer.server.goToTime(player.getCurrentTime(), GlobalRowV);
             }
-        }
+        };
 
         /*********************** Load JewTube APi *******************************/
         var tag = document.createElement('script');
@@ -272,11 +271,7 @@
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-        /** Helper Functions **/
-        function htmlEncode(value) {
-            var encodedValue = $('<div />').text(value).html();
-            return encodedValue;
-        }
+        /** HELPER LAND **/
 
         function syncUrlList(url) {
             var self = $("#" + url);
@@ -288,15 +283,15 @@
             repeatUrlDivs.removeClass('cloroedRep');
             self.find("#deleteUrl").removeClass('hidden');
             self.find("#repeatUrl").removeClass('hidden');
-        }
+        };
 
         function scrollToUrl(url) {
             $('div.scrollList').scrollTo($('div li:eq(' + $('#' + url).index() + ')'), 800);
-        }
+        };
         function scrollToUrlFaster(url) {
             $('div.scrollList').scrollTo($('div li:eq(' + $('#' + url).index() + ')'), 0);
-        }
-        //** Take regex match and run it towards youtubeAPi to extract title and validate id  **//
+        };
+
         function callJewApi(video_id) {
             if (video_id != null) {
                 video_id = video_id[1];
@@ -306,14 +301,14 @@
                     $('#url').val('');
                 })
                 .error(function () {
-                    $('#url').val('BAD FORMAT');
+                    $('#url').val('error');
                 });
             } else {
                 $('#url').val('BAD FORMAT');
             }
-        }
+        };
 
-        ///////////////// SORTING LAND
+        /** SORTING LAND **/
         var get_bigrams, string_similarity;
 
         get_bigrams = function (string) {

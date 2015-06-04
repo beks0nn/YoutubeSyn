@@ -252,12 +252,10 @@
                     player.seekTo(0);
                 }
                 else if (IsShuffle) {
-                    console.log("I DID THE SHUFFLE LOL");
                     syncer.server.shuffleUrl();
                 }
                 else {
                     syncer.server.nextUrl();
-
                 }
             }
             if (event.data == YT.PlayerState.PLAYING) {

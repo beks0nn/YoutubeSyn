@@ -62,8 +62,9 @@
     </footer>
 
     @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/modernizr")
     @Scripts.Render("~/bundles/js")
-    <script src="~/signalr/hubs"></script>
+    <script src="~/signalr/hubs?v=1.0"></script>
     @RenderSection("scripts", required: false)
 </body>
 </html>

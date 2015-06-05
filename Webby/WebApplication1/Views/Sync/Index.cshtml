@@ -15,8 +15,8 @@
                             {
                                 <li id="@item.UrlPart" class="list-group-item urlli @(item.UrlPart != Model.UrlCurrent ? "" : "active")" data-relevance="0">
                                     @item.Title
-                                    <div id="deleteUrl" class="glyphicon glyphicon-remove urldiv redActive @(item.UrlPart != Model.UrlCurrent ? "hidden " : "")"></div>
-                                    <div id="repeatUrl" class="glyphicon glyphicon-refresh urldiv @(item.UrlPart != Model.UrlCurrent ? "hidden " : "")@(Model.isRepeat == true ? "cloroedRep" : "")"></div>
+                                    <div class="glyphicon glyphicon-remove deleteUrl urldiv redActive @(item.UrlPart != Model.UrlCurrent ? "hidden " : "")"></div>
+                                    <div class="glyphicon glyphicon-refresh urldiv repeatUrl @(item.UrlPart != Model.UrlCurrent ? "hidden " : "")@(Model.isRepeat == true ? "cloroedRep" : "")"></div>
                                 </li>
                             }
                         </ul>
@@ -69,7 +69,7 @@
         $(function () {
             // CLIENT SIDE FUNCTIONS (USED BY HUB)
             syncer.client.addUrl = function (url, title) {
-                $('#urlListUL').append('<li id="' + url + '"class="list-group-item urlli" data-relevance="0">' + title + '<div class="glyphicon glyphicon-remove urldiv redActive hidden" id="deleteUrl"></div><div class="glyphicon glyphicon-refresh urldiv hidden" id="repeatUrl"></div></li>');
+                $('#urlListUL').append('<li id="' + url + '"class="list-group-item urlli" data-relevance="0">' + title + '<div class="glyphicon glyphicon-remove deleteUrl urldiv redActive hidden"></div><div class="glyphicon glyphicon-refresh repeatUrl urldiv hidden"></div></li>');
                 JsonUrlList.push({
                     UrlPart: url,
                     Title: title
@@ -122,16 +122,16 @@
 
                 if (IsRepeat){
                     IsShuffle = false;
-                    $("input#shuffleurl").removeClass("isShuff");
+                    $("#shuffleurl").removeClass("isShuff");
                 }
 
                 var self = $("#" + CurrentUrl);
-                self.find('#repeatUrl').toggleClass("cloroedRep");
+                self.find('.repeatUrl').toggleClass("cloroedRep");
             };
 
             syncer.client.initShuffleUrl = function (returnUrl, setBool) {
                 IsShuffle = setBool;
-                $("input#shuffleurl").toggleClass("isShuff");
+                $("#shuffleurl").toggleClass("isShuff");
 
                 if (setBool) {
                     CurrentUrl = returnUrl;
@@ -176,11 +176,11 @@
                     syncer.server.initShuffleUrl();
                 });
 
-                $('#urlListUL').on('click', '#deleteUrl', function () {
+                $('#urlListUL').on('click', '.deleteUrl', function () {
                     syncer.server.deleteUrl(CurrentUrl);
                 });
 
-                $('#urlListUL').on('click', '#repeatUrl', function () {
+                $('#urlListUL').on('click', '.repeatUrl', function () {
                     if (IsRepeat)
                         syncer.server.setRepeat(CurrentUrl, false);
                     else
@@ -197,7 +197,10 @@
                 $("#fuzzysearch").keyup(function () {
                     var i, len, title, urls, query, relevance, ra, rb, elems, obj, results;
                     query = $("#fuzzysearch").val();
-                    urls = JsonUrlList;//TODOS update this..... when adding element
+                    if (query.length < 1 || query.length > 19)
+                        return;
+                    
+                    urls = JsonUrlList;
 
                     //Array of li :s  remove dom objects Weight and sort and then insert into dom.
                     elems = $('#urlListUL').children('li').remove();
@@ -275,19 +278,19 @@
             var self = $("#" + url);
             self.siblings().removeClass('active');
             self.addClass('active');
-            self.siblings().find('#deleteUrl').addClass('hidden');
-            var repeatUrlDivs = self.siblings().find('#repeatUrl');
+            self.siblings().find('.deleteUrl').addClass('hidden');
+            var repeatUrlDivs = self.siblings().find('.repeatUrl');
             repeatUrlDivs.addClass('hidden');
             repeatUrlDivs.removeClass('cloroedRep');
-            self.find("#deleteUrl").removeClass('hidden');
-            self.find("#repeatUrl").removeClass('hidden');
+            self.find(".deleteUrl").removeClass('hidden');
+            self.find(".repeatUrl").removeClass('hidden');
         };
 
-        function scrollToUrl(url) {
-            $('div.scrollList').scrollTo($('div li:eq(' + $('#' + url).index() + ')'), 800);
+        function scrollToUrl(url) {//800
+            $('#' + url).ScrollTo();
         };
-        function scrollToUrlFaster(url) {
-            $('div.scrollList').scrollTo($('div li:eq(' + $('#' + url).index() + ')'), 0);
+        function scrollToUrlFaster(url) {//0
+            $('#' + url).ScrollTo();
         };
 
         function callJewApi(video_id) {

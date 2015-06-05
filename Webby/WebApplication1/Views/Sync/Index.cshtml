@@ -1,53 +1,52 @@
-﻿<body>
-    <!-- Main Content -->
-    <div class="container">
-        <div class="row">
-            <div class="col-md-8" id="diviFramePart">
-                <div class="embed-responsive embed-responsive-16by9">
-                    <div id="player"></div>
-                </div>
-            </div>
-            <div class="col-md-4 mainLi">
-                <div id="divUrlList">
-                    <div class="row scrollList" id="searchResults">
-                        <ul class="list-group" id="urlListUL">
-                            @foreach (var item in Json.Decode(Model.jSonList))
-                            {
-                                <li id="@item.UrlPart" class="list-group-item urlli @(item.UrlPart != Model.UrlCurrent ? "" : "active")" data-relevance="0">
-                                    @item.Title
-                                    <div class="glyphicon glyphicon-remove deleteUrl urldiv redActive @(item.UrlPart != Model.UrlCurrent ? "hidden " : "")"></div>
-                                    <div class="glyphicon glyphicon-refresh urldiv repeatUrl @(item.UrlPart != Model.UrlCurrent ? "hidden " : "")@(Model.isRepeat == true ? "cloroedRep" : "")"></div>
-                                </li>
-                            }
-                        </ul>
-                    </div>
-                </div>
+﻿<!-- Main Content -->
+<div class="container">
+    <div class="row">
+        <div class="col-md-8" id="diviFramePart">
+            <div class="embed-responsive embed-responsive-16by9">
+                <div id="player"></div>
             </div>
         </div>
-        <br />
-        <div class="row">
-            <div class="col-md-8">
-                <div>
-                    <div class="urlinputdiv">
-                        <input class="form-control urlinput" type="text" id="url" />
-                    </div>
-                    <input class="btn btn-default mainbtn" type="button" id="addurl" value="Add url" />
-                    <input class="btn btn-default mainbtn" type="button" id="nexturl" value="Next url" />
-                    <input class="btn btn-default mainbtn @(Model.isShuffle ? "isShuff" : "")" type="button" id="shuffleurl" value="Shuffle" />
+        <div class="col-md-4 mainLi">
+            <div id="divUrlList">
+                <div class="row scrollList" id="searchResults">
+                    <ul class="list-group" id="urlListUL">
+                        @foreach (var item in Json.Decode(Model.jSonList))
+                        {
+                            <li id="@item.UrlPart" class="list-group-item urlli @(item.UrlPart != Model.UrlCurrent ? "" : "active")" data-relevance="0">
+                                @item.Title
+                                <div class="glyphicon glyphicon-remove deleteUrl urldiv redActive @(item.UrlPart != Model.UrlCurrent ? "hidden " : "")"></div>
+                                <div class="glyphicon glyphicon-refresh urldiv repeatUrl @(item.UrlPart != Model.UrlCurrent ? "hidden " : "")@(Model.isRepeat == true ? "cloroedRep" : "")"></div>
+                            </li>
+                        }
+                    </ul>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="right-inner-addon ">
-                    <i class="glyphicon glyphicon-search"></i>
-                    <input type="text" class="form-control fuzzyinput" placeholder="Search" id="fuzzysearch" />
-                </div>
-            </div>
-        </div>
-        <div class="row">
         </div>
     </div>
-    <hr>
-</body>
+    <br />
+    <div class="row">
+        <div class="col-md-8">
+            <div>
+                <div class="urlinputdiv">
+                    <input class="form-control urlinput" type="text" id="url" />
+                </div>
+                <input class="btn btn-default mainbtn" type="button" id="addurl" value="Add url" />
+                <input class="btn btn-default mainbtn" type="button" id="nexturl" value="Next url" />
+                <input class="btn btn-default mainbtn @(Model.isShuffle ? "isShuff" : "")" type="button" id="shuffleurl" value="Shuffle" />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="right-inner-addon ">
+                <i class="glyphicon glyphicon-search"></i>
+                <input type="text" class="form-control fuzzyinput" placeholder="Search" id="fuzzysearch" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+    </div>
+</div>
+<hr>
+
 
 @section scripts {
     <script>
@@ -120,7 +119,7 @@
             syncer.client.setRepeat = function (setBool, setUrl) {
                 IsRepeat = setBool;
 
-                if (IsRepeat){
+                if (IsRepeat) {
                     IsShuffle = false;
                     $("#shuffleurl").removeClass("isShuff");
                 }
@@ -199,7 +198,7 @@
                     query = $("#fuzzysearch").val();
                     if (query.length < 1 || query.length > 19)
                         return;
-                    
+
                     urls = JsonUrlList;
 
                     //Array of li :s  remove dom objects Weight and sort and then insert into dom.
@@ -344,5 +343,5 @@
             }
             return 0.0;
         };
-    </script>
+</script>
 }

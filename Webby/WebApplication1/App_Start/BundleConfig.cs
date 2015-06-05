@@ -21,7 +21,8 @@ namespace WebApplication1
                         "~/Scripts/jquery.signalR-2.2.0.min.js",
                         "~/Scripts/respond.min.js",
                         "~/Scripts/underscore.js",
-                        "~/Scripts/jquery-scrollto.js"
+                        "~/Scripts/jquery-scrollto.js",
+                        "~/Scripts/mustache.js"
                         ));
 
             // ready for production, use the build tool at http://modernizr.com to pick only the tests you need.

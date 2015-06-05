@@ -68,7 +68,7 @@
         $(function () {
             // CLIENT SIDE FUNCTIONS (USED BY HUB)
             syncer.client.addUrl = function (url, title) {
-                $('#urlListUL').append('<li id="' + url + '"class="list-group-item urlli" data-relevance="0">' + title + '<div class="glyphicon glyphicon-remove deleteUrl urldiv redActive hidden"></div><div class="glyphicon glyphicon-refresh repeatUrl urldiv hidden"></div></li>');
+                $('#urlListUL').append(makeNewListItem(url, title));
                 JsonUrlList.push({
                     UrlPart: url,
                     Title: title
@@ -272,6 +272,12 @@
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
         /** HELPER LAND **/
+        function makeNewListItem(url, title) {
+            var data, tpl;
+            data = { url: url, title: title };
+            tpl = '<li id="{{url}}" class="list-group-item urlli" data-relevance="0">{{title}}<div class="glyphicon glyphicon-remove deleteUrl urldiv redActive hidden"></div><div class="glyphicon glyphicon-refresh repeatUrl urldiv hidden"></div></li>';
+            return Mustache.to_html(tpl, data);
+        };
 
         function syncUrlList(url) {
             var self = $("#" + url);

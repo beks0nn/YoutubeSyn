@@ -12,7 +12,7 @@
                     <ul class="list-group" id="urlListUL">
                         @foreach (var item in Json.Decode(Model.jSonList))
                         {
-                            <li id="@item.UrlPart" class="list-group-item urlli @(item.UrlPart != Model.UrlCurrent ? "" : "active")" data-relevance="0">
+                            <li id="@item.UrlPart" class="list-group-item urlli@(item.UrlPart != Model.UrlCurrent ? "" : " active")" data-relevance="0">
                                 @item.Title
                                 <div class="glyphicon glyphicon-remove deleteUrl urldiv redActive @(item.UrlPart != Model.UrlCurrent ? "hidden " : "")"></div>
                                 <div class="glyphicon glyphicon-refresh urldiv repeatUrl @(item.UrlPart != Model.UrlCurrent ? "hidden " : "")@(Model.isRepeat == true ? "cloroedRep" : "")"></div>
@@ -291,10 +291,10 @@
             self.find(".repeatUrl").removeClass('hidden');
         };
 
-        function scrollToUrl(url) {//800
+        function scrollToUrl(url) {
             $('#' + url).ScrollTo();
         };
-        function scrollToUrlFaster(url) {//0
+        function scrollToUrlFaster(url) {
             $('#' + url).ScrollTo();
         };
 

@@ -403,17 +403,32 @@ body {
 }
 
 .input-lg{
-    height: 52px;
+   height: 52px;
    font-size: 20px;
    line-height: 52px;
 }
 
-.scrollList {
-    height:20em;
-    overflow-y: scroll;
-    overflow-x: hidden;
-
+.element, .outer-container {
+    height:489.375px;
+    width: auto;
 }
+
+.outer-container {
+ position: relative;
+ overflow: hidden;
+}
+ 
+.inner-container {
+ position: absolute;
+ left: 0;
+ overflow-x: hidden;
+ overflow-y: scroll;
+}
+ 
+.inner-container::-webkit-scrollbar {
+ display: none;
+}
+/**/
 
 .iframeplusone{
     width:100%;
@@ -476,7 +491,6 @@ body {
     pointer-events: none;
 }
 
-.mainLi{
-    padding-top:1em;
-    padding-bottom:1em;
+li:hover {
+ cursor:default;
 }

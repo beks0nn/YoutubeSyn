@@ -1,31 +1,35 @@
 ﻿<!-- Main Content -->
 <div class="container">
     <div class="row">
-        <div class="col-md-8" id="diviFramePart">
-            <div class="embed-responsive embed-responsive-16by9">
+        <div class="col-md-7">
+            <div class="embed-responsive embed-responsive-4by3">
                 <div id="player"></div>
             </div>
         </div>
-        <div class="col-md-4 mainLi">
-            <div id="divUrlList">
-                <div class="row scrollList" id="searchResults">
-                    <ul class="list-group" id="urlListUL">
-                        @foreach (var item in Json.Decode(Model.jSonList))
-                        {
-                            <li id="@item.UrlPart" class="list-group-item urlli@(item.UrlPart != Model.UrlCurrent ? "" : " active")" data-relevance="0">
-                                @item.Title
-                                <div class="glyphicon glyphicon-remove deleteUrl urldiv redActive @(item.UrlPart != Model.UrlCurrent ? "hidden " : "")"></div>
-                                <div class="glyphicon glyphicon-refresh urldiv repeatUrl @(item.UrlPart != Model.UrlCurrent ? "hidden " : "")@(Model.isRepeat == true ? "cloroedRep" : "")"></div>
-                            </li>
-                        }
-                    </ul>
+        <div class="col-md-5">
+            <div class="outer-container">
+                <div class="inner-container">
+                    <div class="element">
+                        <ul class="list-group" id="urlListUL">
+                            @foreach (var item in Json.Decode(Model.jSonList))
+                            {
+                                <li id="@item.UrlPart" class="list-group-item urlli@(item.UrlPart != Model.UrlCurrent ? "" : " active")" data-relevance="0">
+                                    @item.Title
+                                    <div class="pull-right">
+                                        <div class="glyphicon glyphicon-remove deleteUrl urldiv redActive@(item.UrlPart != Model.UrlCurrent ? " hidden " : "")"></div>
+                                        <div class="glyphicon glyphicon-refresh urldiv repeatUrl@(item.UrlPart != Model.UrlCurrent ? " hidden" : "")@(Model.isRepeat == true ? " cloroedRep" : "")"></div>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     <br />
     <div class="row">
-        <div class="col-md-8">
+        <div class="col-md-7">
             <div>
                 <div class="urlinputdiv">
                     <input class="form-control urlinput" type="text" id="url" />
@@ -35,14 +39,12 @@
                 <input class="btn btn-default mainbtn @(Model.isShuffle ? "isShuff" : "")" type="button" id="shuffleurl" value="Shuffle" />
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-5">
             <div class="right-inner-addon ">
                 <i class="glyphicon glyphicon-search"></i>
                 <input type="text" class="form-control fuzzyinput" placeholder="Search" id="fuzzysearch" />
             </div>
         </div>
-    </div>
-    <div class="row">
     </div>
 </div>
 <hr>

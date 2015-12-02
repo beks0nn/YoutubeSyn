@@ -47,7 +47,6 @@
         </div>
     </div>
 </div>
-<hr>
 
 
 @section scripts {
@@ -152,15 +151,13 @@
                     var inputUrl, video_id, regxLong, regxShort;
                     inputUrl = $('#url').val();
                     rx = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/;
-                    rxs = /([a-zA-Z0-9_-]{11})/;
 
                     if (inputUrl.length > 11) {
                         video_id = inputUrl.match(rx);
                         callJewApi(video_id);
                     }
                     else if (inputUrl.length === 11) {
-                        video_id = inputUrl.match(rxs);
-                        callJewApi(video_id);
+                        callJewApi(inputUrl);
                     }
                     else {
                         $('#url').val('BAD FORMAT');

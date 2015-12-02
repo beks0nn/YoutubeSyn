@@ -19,15 +19,14 @@ namespace WebApplication1.Hubs
             try
             {
                 var urlToAdd = new Url();
-                var scrubTitle = WebUtility.HtmlEncode(title);
-                url = SanityScrub(url);
+                checkInputStrings(url,title);
                 urlToAdd.UrlPart = url;
-                urlToAdd.Title = scrubTitle;
+                urlToAdd.Title = title;
                 mongo.AddUrlToList(urlToAdd, Guid.NewGuid());//TODOS Only 1 playlist for now as there are no users.
 
-                Clients.All.addUrl(url, WebUtility.HtmlDecode(scrubTitle));
+                Clients.All.addUrl(url, title);
             }
-            catch (UrlFormatException)
+            catch (InputFormatException)
             {
                 Clients.Caller.addUrlEx();
             }
@@ -148,18 +147,16 @@ namespace WebApplication1.Hubs
             Clients.All.setRepeat(set, url);
         }
 
-        #region Helpers 
-        private static Regex YOUTUBESANITY = new Regex(@"[a-zA-Z0-9_-]{11}");
-        public string SanityScrub(string url)
+        #region Helpers
+        public void checkInputStrings(string url, string title)
         {
-            var retUrl = System.Net.WebUtility.HtmlEncode(url);
-            if (YOUTUBESANITY.Match(retUrl).Success)
+            if (url.Length < 20 && title.Length < 100)
             {
-                return retUrl;
+                return;
             }
             else
             {
-                throw new UrlFormatException();
+                throw new InputFormatException();
             }
         }
         #endregion

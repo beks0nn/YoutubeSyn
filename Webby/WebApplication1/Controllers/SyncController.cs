@@ -26,7 +26,7 @@ namespace WebApplication1.Controllers
         {
             var retModel = new SyncViewModel();
             var playList = mongo.GetAllPlayLists().First();
-            var retUrlList = playList.UrlList.Select(e => new SmallerUrl() { Title = WebUtility.HtmlDecode(e.Title), UrlPart = e.UrlPart });
+            var retUrlList = playList.UrlList.Select(e => new SmallerUrl() { Title = e.Title, UrlPart = e.UrlPart });
 
             retModel.RowVersion = playList.version.ToString();
             retModel.UrlCurrent = playList.CurrentUrl;

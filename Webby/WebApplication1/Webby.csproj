@@ -181,7 +181,7 @@
     <Compile Include="Models\SmallerUrl.cs" />
     <Compile Include="Models\SyncViewModel.cs" />
     <Compile Include="Models\Url.cs" />
-    <Compile Include="Models\UrlFormatException.cs" />
+    <Compile Include="Models\InputFormatException.cs" />
     <Compile Include="MongoDBLayer\MongoData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />

@@ -291,7 +291,7 @@
         function makeNewListItem(url, title) {
             var data, tpl;
             data = { url: url, title: title };
-            tpl = '<li id="{{url}}" class="list-group-item urlli" data-relevance="0">{{title}}<div class="glyphicon glyphicon-remove deleteUrl urldiv redActive hidden"></div><div class="glyphicon glyphicon-refresh repeatUrl urldiv hidden"></div></li>';
+            tpl = '<li id="{{url}}" class="list-group-item urlli" data-relevance="0">{{title}}<div class="glyphicon glyphicon-remove deleteUrl urldiv redActive hidden" data-toggle="modal" data-target="#myModal"></div><div class="glyphicon glyphicon-refresh repeatUrl urldiv hidden"></div></li>';
             return Mustache.to_html(tpl, data);
         };
 

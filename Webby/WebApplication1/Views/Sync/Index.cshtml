@@ -16,7 +16,7 @@
                                 <li id="@item.UrlPart" class="list-group-item urlli@(item.UrlPart != Model.UrlCurrent ? "" : " active")" data-relevance="0">
                                     @item.Title
                                     <div class="pull-right">
-                                        <div class="glyphicon glyphicon-remove deleteUrl urldiv redActive@(item.UrlPart != Model.UrlCurrent ? " hidden " : "")"></div>
+                                        <div class="glyphicon glyphicon-remove deleteUrl urldiv redActive@(item.UrlPart != Model.UrlCurrent ? " hidden " : "")" data-toggle="modal" data-target="#myModal"></div>
                                         <div class="glyphicon glyphicon-refresh urldiv repeatUrl@(item.UrlPart != Model.UrlCurrent ? " hidden" : "")@(Model.isRepeat == true ? " cloroedRep" : "")"></div>
                                     </div>
                                 </li>
@@ -46,8 +46,24 @@
             </div>
         </div>
     </div>
-</div>
 
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                </div>
+                <div class="modal-body">
+                    Are you sure?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default mainbtn" data-dismiss="modal">Cancle</button>
+                    <button type="button" class="btn btn-default mainbtn" data-dismiss="modal" id="deletecurrenturl">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section scripts {
     <script>
@@ -173,10 +189,11 @@
                     this.blur();
                     syncer.server.initShuffleUrl();
                 });
-
-                $('#urlListUL').on('click', '.deleteUrl', function () {
+                
+                $('#deletecurrenturl').click(function () {
                     syncer.server.deleteUrl(CurrentUrl);
                 });
+
 
                 $('#urlListUL').on('click', '.repeatUrl', function () {
                     if (IsRepeat)

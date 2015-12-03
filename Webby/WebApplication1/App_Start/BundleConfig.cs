@@ -25,6 +25,10 @@ namespace WebApplication1
                         "~/Scripts/mustache.js"
                         ));
 
+            bundles.Add(new ScriptBundle("~/bundles/SyncController").Include(
+                        "~/Scripts/SyncController.js"
+                        ));
+
             // ready for production, use the build tool at http://modernizr.com to pick only the tests you need.
             bundles.Add(new ScriptBundle("~/bundles/modernizr").Include(
                         "~/Scripts/modernizr-*"

@@ -67,7 +67,7 @@ var syncViewHub = {
                 inputUrl = $('#url').val();
 
                 if (inputUrl.length > 11) {
-                    video_id = inputUrl.match(youtubeUrlRegex);
+                    video_id = inputUrl.match(syncViewHub.youtubeUrlRegex);
                     googleApiHelper.getMetaDataByVideoID(video_id);
                 }
                 else if (inputUrl.length === 11) {

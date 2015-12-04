@@ -34,7 +34,7 @@ function onsyncViewPlayerReady(event) {
 };
 
 function onsyncViewPlayerStateChange(event) {
-    if (event.data == YT.Player.ENDED) {
+    if (event.data == YT.PlayerState.ENDED) {
         if (syncViewData.IsRepeat) {
             syncViewPlayer.seekTo(0);
         }
